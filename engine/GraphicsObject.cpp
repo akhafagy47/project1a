@@ -2,7 +2,8 @@
 
 namespace CMPUT350 {
 
-void GraphicsObject::RenderBackground(GameContext *contextrender) { return; }
-void GraphicsObject::RenderForeground(GameContext *contextrender) { return; }
+// Default implementations draw nothing; derived objects override the layer(s) they use.
+void GraphicsObject::RenderBackground(GameContext *context) {}
+void GraphicsObject::RenderForeground(GameContext *context) {}
 
 }  // namespace CMPUT350
