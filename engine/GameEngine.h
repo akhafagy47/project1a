@@ -51,9 +51,24 @@ public:
     void Run();
 
 private:
+    void RemoveDeadObjects();
+    void AddPendingObjects();
+    void ProcessEvents();
+    void UpdateObjects();
+    void ProcessCollisions();
+    void LateUpdateObjects();
+    void Render();
 
     std::shared_ptr<sf::RenderWindow> mWindow;
     std::shared_ptr<sf::Font> mFont;
+    DrawContext mDrawContext;  // Must be declared after mWindow and mFont (initialization order)
+    GameContext mContext;
+
+    std::vector<std::shared_ptr<GameObject>> mGameObjects;     // Objects currently in the game
+    std::vector<std::shared_ptr<GameObject>> mPendingObjects;  // Objects added this frame
+
+    bool mPaused = false;
+    bool mStepFrame = false;  // When paused, run exactly one more frame
 };
 
 }  // namespace CMPUT350
