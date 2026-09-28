@@ -4,7 +4,7 @@
 #include <cctype>
 
 Player::Player(CMPUT350::Point2D loc)
-    :player_loc(loc), player_boundary(loc.x -20.0f, loc.y - 20.0f, 40.0f, 40.0f), is_player_alive(true)
+    :is_player_alive(true), player_boundary(loc.x -20.0f, loc.y - 20.0f, 40.0f, 40.0f), player_loc(loc) 
 {
     // TODO: Update code
 }

@@ -1,6 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "Bullet.h"
+class Bullet;
 
 #include "CollisionObject.h"
 

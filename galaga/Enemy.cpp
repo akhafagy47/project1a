@@ -2,11 +2,11 @@
 #include "Bullet.h"
 
 Enemy::Enemy(CMPUT350::Point2D loc)
-:enemy_loc(loc), is_enemy_alive(true), enemy_boundary(loc.x-20.f, loc.y-20.f, 40.0f, 40.f)
+:is_enemy_alive(true), enemy_boundary(loc.x-20.f, loc.y-20.f, 40.0f, 40.f), enemy_loc(loc)
 {
     // TODO: Update code
     //Based on what we saw online, the size of both enemy and player are 16x16,
-    //But because the player is set to 40x40, we have set the player to 40x40 as well
+    //But because the player is set to 40x40, we have set the enemy to 40x40 as well
 }
 
 void Enemy::Initialize(CMPUT350::GameContext* context)
@@ -23,8 +23,8 @@ void Enemy::LateUpdate(CMPUT350::GameContext* context)
 
 bool Enemy::HandleKeyEvent(CMPUT350::GameContext* context, char key)
 {
-    return false;
     //being ignored for now;
+    return false;
 }
 
 void Enemy::RenderBackground(CMPUT350::GameContext* context)

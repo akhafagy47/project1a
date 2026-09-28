@@ -10,7 +10,6 @@ void DrawContext::DrawCenteredText(const std::string &text, int pixelSize, Point
 {
     sf::Text sfml_text(*mFont, text);
     sfml_text.setCharacterSize(pixelSize);
-    sfml_text.setPosition(sf::Vector2f(p.x, p.y));
     sfml_text.setFillColor(sf::Color(c.r, c.g, c.b));
 
     sf::FloatRect text_outline = sfml_text.getLocalBounds();
@@ -56,7 +55,7 @@ void DrawContext::FrameRect(Rect r, float width, RGBColor c)
     sf::RectangleShape rect(sf::Vector2f(r.width, r.height));
     rect.setFillColor(sf::Color::Transparent); // Hollow inside
     rect.setOutlineColor(sf::Color(c.r, c.g, c.b));
-    rect.setOutlineThickness(width);
+    rect.setOutlineThickness(-width);
     rect.setPosition(sf::Vector2f(r.topLeft.x, r.topLeft.y));
     mWindow->draw(rect);
 }
@@ -87,8 +86,7 @@ void DrawContext::DrawLine(Point2D from, Point2D to, float width, RGBColor c)
     line.setPosition(sf::Vector2f(mid_x, mid_y));
 
     float radians = std::atan2(y_diff, x_diff);
-    float degrees = radians*180.0f/3.14f;
-    line.setRotation(sf::degrees(degrees));
+    line.setRotation(sf::radians(radians));
     line.setFillColor(sf::Color(c.r, c.g, c.b));
     mWindow->draw(line);
 }

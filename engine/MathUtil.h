@@ -300,7 +300,7 @@ struct Rect {
 
         float cross_da = Point2D::Cross(corner_a - corner_d, p - corner_d);
 
-        if (cross_ab < 0.0f && cross_bc < 0.0f && cross_cd < 0.0f && cross_da < 0.0f)
+        if (cross_ab >= 0.0f && cross_bc >= 0.0f && cross_cd >= 0.0f && cross_da >= 0.0f)
         {
             return true;
         }
@@ -308,7 +308,6 @@ struct Rect {
         {
             return false;
         }
-        return false;
     }
 };
 

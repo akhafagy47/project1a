@@ -1,8 +1,8 @@
 #include "Bullet.h"
+#include "Player.h"
 
 Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Point2D heading, bool player)
-    :current_bullet_loc(location), bullet_heading(heading), shot_by_player(player),
-    is_bullet_alive(true), bullet_boundary(location.x, location.y, 2.0f, 2.0f), previous_bullet_loc(location)
+    :is_bullet_alive(true), shot_by_player(player), current_bullet_loc(location), previous_bullet_loc(location), bullet_heading(heading), bullet_boundary(location.x, location.y, 2.0f, 2.0f) 
 {
 }
 
@@ -64,6 +64,20 @@ void Bullet::RenderForeground(CMPUT350::GameContext* context)
 
 void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj)
 {
+    std::shared_ptr<Bullet> other_bullet = std::dynamic_pointer_cast<Bullet>(obj);
+    std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(obj);
+
+    
+    if (other_bullet != nullptr)
+    {
+        return; 
+    }
+    
+    if (shot_by_player && player != nullptr)
+    {
+        return; 
+    }
+
     Kill();
 }
 
