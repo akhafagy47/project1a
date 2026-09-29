@@ -1,5 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
+class Bullet;
 
 #include "CollisionObject.h"
 
@@ -24,6 +25,15 @@ public:
     // Collision Object Functions
     void CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj) override;
     const CMPUT350::Rect& GetBounds() override;
+private:
+    bool is_player_alive;
+    CMPUT350::Rect player_boundary;
+    CMPUT350::Point2D player_loc;
+    std::weak_ptr<Bullet> player_bullet_1;
+    std::weak_ptr<Bullet> player_bullet_2;
+
+
+
 
 };
 

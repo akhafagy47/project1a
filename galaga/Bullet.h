@@ -25,5 +25,14 @@ public:
     // Collision Object Functions
     void CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj) override;
     const CMPUT350::Rect& GetBounds() override;
+private:
+    bool is_bullet_alive;
+    bool shot_by_player;
+    CMPUT350::Point2D current_bullet_loc;
+    CMPUT350::Point2D previous_bullet_loc;
+    CMPUT350::Point2D bullet_heading;
+    CMPUT350::Rect bullet_boundary;
+
+
 };
 #endif // BULLET_H
