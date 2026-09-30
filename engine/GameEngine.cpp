@@ -156,8 +156,8 @@ void GameEngine::UpdateObjects() {
  * CollisionEnter() once on each object of every overlapping pair.
  *
  * Only objects that are CollisionObjects (found with RTTI) take part. Each unordered pair is
- * tested once (j > i), so objects never collide with themselves. Objects killed by an earlier
- * collision this frame are skipped so they don't keep colliding.
+ * tested once (b > a), so objects never collide with themselves. Both objects in an overlapping
+ * pair are always notified. Objects killed earlier this frame are skipped for later pairs.
  */
 void GameEngine::ProcessCollisions() {
     // Collect collision objects and a copy of their bounds once, instead of casting and calling
