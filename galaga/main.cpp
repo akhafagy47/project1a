@@ -128,6 +128,8 @@ int main()
         auto player = std::make_shared<Player>(CMPUT350::Point2D(768 / 2, 900));
         engine.AddGameObject(player);
         engine.AddGameObject(std::make_shared<Stars>(250, CMPUT350::Rect(0, 0, 768, 1024)));
+
+        //Spawns 5 columns and 8 rows of enemies. 
         for (int y = 0; y < 5; y++)
         {
             for (int x = 0; x < 8; x++)
