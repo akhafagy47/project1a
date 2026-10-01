@@ -32,7 +32,7 @@ void Bullet::Update(CMPUT350::GameContext* context)
     int screenHeight = context->ScreenContext->GetWindowHeight();
     int screenWidth = context->ScreenContext->GetWindowWidth();
 
-    //if bullet is out of screen;
+    //if bullet is out of screen kill it;
     if (current_bullet_loc.x<0.0f || current_bullet_loc.x>screenWidth || current_bullet_loc.y<0.0f || current_bullet_loc.y>screenHeight) 
     {
         Kill();
@@ -67,12 +67,13 @@ void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& ob
     std::shared_ptr<Bullet> other_bullet = std::dynamic_pointer_cast<Bullet>(obj);
     std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(obj);
 
-    
+    // Bullets pass through other bullets and dont kill each other.
     if (other_bullet != nullptr)
     {
         return; 
     }
-    
+
+    // Makes sure player's own bullets dont kill it when created.
     if (shot_by_player && player != nullptr)
     {
         return; 

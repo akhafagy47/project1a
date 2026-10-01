@@ -42,6 +42,8 @@ void Enemy::RenderForeground(CMPUT350::GameContext* context)
 void Enemy::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj)
 {
     std::shared_ptr<Bullet> bullet = std::dynamic_pointer_cast<Bullet>(obj);
+    
+    //Collisions with other bullet fired by other enemies cant kill the bullet
     if (bullet != nullptr && !bullet->IsPlayerBullet())
     {
         return; 

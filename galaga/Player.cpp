@@ -22,11 +22,13 @@ void Player::Update(CMPUT350::GameContext* context)
 
     int screenWidth = context->ScreenContext->GetWindowWidth();
 
+    //Prevents the player from exiting the left bound of the screen.
     if (player_loc.x -20.0f < 0.0f) 
     {
         player_loc.x = 20.0f;
     }
 
+    //Prevents the player from exiting the right bound of the screen.
     if (player_loc.x + 20.0f > screenWidth)
     {
         player_loc.x = screenWidth - 20.0f;
@@ -49,22 +51,26 @@ bool Player::HandleKeyEvent(CMPUT350::GameContext* context, char key)
     }
     
     char normalized_key = std::tolower(key);
+
+    //Moving left
     if (normalized_key == 'a')
     {
         player_loc.x -= 20.0f;
         return true;
     }
 
+    //Moving right
     if (normalized_key == 'd')
     {
         player_loc.x += 20.0f;
         return true;
     }
-
+    //Shooting when space bar is clicked.
     if (key == ' ')
     {
         CMPUT350::Point2D heading(0.0f, -10.0f);
 
+        //Checks if bullet 1 is available to be shot
         if (player_bullet_1.expired())
         {
             std::shared_ptr<Bullet> bullet1 = std::make_shared<Bullet>(player_loc, heading, true);
@@ -72,6 +78,7 @@ bool Player::HandleKeyEvent(CMPUT350::GameContext* context, char key)
             context->mEngineView->AddGameObject(bullet1); 
             return true;
         }
+        //Checks if bullet 2 is available to be shot
         else if (player_bullet_2.expired())
         {
             std::shared_ptr<Bullet> bullet2 = std::make_shared<Bullet>(player_loc, heading, true);
@@ -109,6 +116,8 @@ void Player::RenderForeground(CMPUT350::GameContext* context)
 
 void Player::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj)
 {
+
+    //Makes sure bullet created by player doesnt destroy player.
     std::shared_ptr<Bullet> bullet = std::dynamic_pointer_cast<Bullet>(obj);
     if (bullet!=nullptr && bullet->IsPlayerBullet())
     {
