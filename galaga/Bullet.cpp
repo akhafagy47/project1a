@@ -1,8 +1,12 @@
 #include "Bullet.h"
 #include "Player.h"
 
-Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Point2D heading, bool player)
-    :is_bullet_alive(true), shot_by_player(player), current_bullet_loc(location), previous_bullet_loc(location), bullet_heading(heading), bullet_boundary(location.x, location.y, 2.0f, 2.0f) 
+Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Point2D heading, bool player,
+               std::weak_ptr<CMPUT350::GameObject> parent)
+    : is_bullet_alive(true), shot_by_player(player),
+      current_bullet_loc(location), previous_bullet_loc(location), bullet_heading(heading),
+      bullet_boundary(location.x, location.y, 2.0f, 2.0f),
+      has_hit(false), hit_point(location), bullet_parent(parent), bullet_shapes()
 {
 }
 
@@ -43,11 +47,6 @@ void Bullet::Update(CMPUT350::GameContext* context)
 
 void Bullet::LateUpdate(CMPUT350::GameContext* context)
 {
-}
-
-bool Bullet::HandleKeyEvent(CMPUT350::GameContext* context, char key)
-{
-    return false;
 }
 
 void Bullet::RenderBackground(CMPUT350::GameContext* context)
@@ -98,4 +97,12 @@ const CMPUT350::Rect& Bullet::GetBounds()
 {
     // TODO: Update code
     return bullet_boundary;
+}
+CMPUT350::Point2D Bullet::GetLocation() const { return current_bullet_loc; }
+float Bullet::GetRotation() const { return 0.0f; }
+const std::vector<CMPUT350::Shape>& Bullet::GetShapes() { return bullet_shapes; }
+void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj,
+                            const CMPUT350::Point2D& collisionPoint)
+{
+    CollisionEnter(obj);
 }

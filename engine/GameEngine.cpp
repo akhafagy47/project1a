@@ -22,7 +22,8 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), name,
                                                  sf::Style::Titlebar | sf::Style::Close)),
       mFont(std::make_shared<sf::Font>()),
-      mDrawContext(mWindow, mFont) {
+      mScreenContext(mWindow, mFont),
+      mGUIContext(mWindow, mFont) {
     mWindow->setFramerateLimit(30);
 
     // The font is embedded in FontData.h, so it is loaded from memory rather than from disk.
@@ -31,7 +32,9 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     }
 
     mContext.mEngineView = this;
-    mContext.ScreenContext = &mDrawContext;
+    mContext.ScreenContext = &mScreenContext;
+    mContext.GUIContext = &mGUIContext;
+    mContext.mNotificationManager = &mNotificationManager;
 }
 
 GameEngine::~GameEngine() {
@@ -63,6 +66,7 @@ void GameEngine::Run() {
 
         // Steps 4-6 are skipped while paused, unless a single frame step was requested
         if (!mPaused || mStepFrame) {
+            mContext.currentFrame = mFrame++;
             // 4. Update game objects
             UpdateObjects();
 
@@ -133,10 +137,6 @@ void GameEngine::ProcessEvents() {
                 mPaused = !mPaused;
             } else if (key == 'n' && mPaused) {
                 mStepFrame = true;
-            } else {
-                for (auto& obj : mGameObjects) {
-                    obj->HandleKeyEvent(&mContext, key);
-                }
             }
         }
     }
@@ -228,5 +228,15 @@ void GameEngine::Render() {
 
     mWindow->display();
 }
+
+// TODO: implement key -> notification mapping
+void GameEngine::InstallKeyDownNotification(int key, const std::string& notification) {}
+void GameEngine::InstallKeyUpNotification(int key, const std::string& notification) {}
+void GameEngine::HandleKey(int key, bool down) {}
+
+EngineView::const_iterator GameEngine::cbegin() const { return mGameObjects.cbegin(); }
+EngineView::const_iterator GameEngine::cend() const { return mGameObjects.cend(); }
+EngineView::const_iterator GameEngine::begin() const { return mGameObjects.begin(); }
+EngineView::const_iterator GameEngine::end() const { return mGameObjects.end(); }
 
 }  // namespace CMPUT350

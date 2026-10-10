@@ -43,55 +43,6 @@ void Player::LateUpdate(CMPUT350::GameContext* context)
 {
 }
 
-bool Player::HandleKeyEvent(CMPUT350::GameContext* context, char key)
-{
-    if (!IsAlive())
-    {
-        return false;
-    }
-    
-    char normalized_key = std::tolower(key);
-
-    //Moving left
-    if (normalized_key == 'a')
-    {
-        player_loc.x -= 20.0f;
-        return true;
-    }
-
-    //Moving right
-    if (normalized_key == 'd')
-    {
-        player_loc.x += 20.0f;
-        return true;
-    }
-    //Shooting when space bar is clicked.
-    if (key == ' ')
-    {
-        CMPUT350::Point2D heading(0.0f, -10.0f);
-
-        //Checks if bullet 1 is available to be shot
-        if (player_bullet_1.expired())
-        {
-            std::shared_ptr<Bullet> bullet1 = std::make_shared<Bullet>(player_loc, heading, true);
-            player_bullet_1 = bullet1; 
-            context->mEngineView->AddGameObject(bullet1); 
-            return true;
-        }
-        //Checks if bullet 2 is available to be shot
-        else if (player_bullet_2.expired())
-        {
-            std::shared_ptr<Bullet> bullet2 = std::make_shared<Bullet>(player_loc, heading, true);
-            player_bullet_2 = bullet2; 
-            context->mEngineView->AddGameObject(bullet2); 
-            return true;
-        }
-    }
-    return false;
-
-
-}
-
 void Player::RenderBackground(CMPUT350::GameContext* context)
 {
 }
@@ -142,3 +93,7 @@ const CMPUT350::Rect& Player::GetBounds()
     // TODO: Update code
     return player_boundary;
 }
+void Player::ReceiveNotification(const std::string &key) {}
+CMPUT350::Point2D Player::GetLocation() const { return player_loc; }
+float Player::GetRotation() const { return 0.0f; }
+const std::vector<CMPUT350::Shape>& Player::GetShapes() { return player_shapes; }

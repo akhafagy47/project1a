@@ -11,6 +11,9 @@
 #include "GameObject.h"
 #include "MathUtil.h"
 #include <SFML/Graphics.hpp>
+#include <unordered_map>
+#include "CollisionObject.h"
+#include "NotificationManager.h"
 
 namespace CMPUT350 {
 
@@ -50,6 +53,13 @@ public:
      */
     void Run();
 
+    void InstallKeyDownNotification(int key, const std::string &notification) override;
+    void InstallKeyUpNotification(int key, const std::string &notification) override;
+    const_iterator cbegin() const override;
+    const_iterator cend() const override;
+    const_iterator begin() const override;
+    const_iterator end() const override;
+
 private:
     void RemoveDeadObjects();
     void AddPendingObjects();
@@ -58,10 +68,18 @@ private:
     void ProcessCollisions();
     void LateUpdateObjects();
     void Render();
+    void HandleKey(int key, bool down);
+    void SetupTransform(const GraphicsObject &obj);
+    Rect GetWorldBounds(CollisionObject &obj);
+    std::vector<Shape> GetWorldShapes(CollisionObject &obj);
+    static bool FirstContact(const Line &line, const Shape &other, Point2D &point);
+    static bool ShapesOverlap(const Shape &a, const Shape &b);
+    bool ObjectsCollide(CollisionObject &a, CollisionObject &b, Point2D &pointA, bool &hasPointA, Point2D &pointB, bool &hasPointB);
 
     std::shared_ptr<sf::RenderWindow> mWindow;
     std::shared_ptr<sf::Font> mFont;
-    DrawContext mDrawContext;  // Must be declared after mWindow and mFont (initialization order)
+    DrawContext mScreenContext;
+    DrawContext mGUIContext;
     GameContext mContext;
 
     std::vector<std::shared_ptr<GameObject>> mGameObjects;     // Objects currently in the game
@@ -69,6 +87,12 @@ private:
 
     bool mPaused = false;
     bool mStepFrame = false;  // When paused, run exactly one more frame
+    std::unordered_map<int, std::vector<std::string>> mKeyDownNotifications;
+    std::unordered_map<int, std::vector<std::string>> mKeyUpNotifications;
+    NotificationManager mNotificationManager;
+    int mFrame = 0;
+
+
 };
 
 }  // namespace CMPUT350
