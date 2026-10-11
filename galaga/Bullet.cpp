@@ -100,9 +100,12 @@ const CMPUT350::Rect& Bullet::GetBounds()
 }
 CMPUT350::Point2D Bullet::GetLocation() const { return current_bullet_loc; }
 float Bullet::GetRotation() const { return 0.0f; }
+
+// TODO: Once collisions go through shapes, an empty list means nothing can ever hit.
 const std::vector<CMPUT350::Shape>& Bullet::GetShapes() { return bullet_shapes; }
 void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj,
                             const CMPUT350::Point2D& collisionPoint)
 {
+    // TODO: save collisionPoint and draw a circle there when the bullet dies.
     CollisionEnter(obj);
 }

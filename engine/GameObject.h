@@ -41,8 +41,6 @@ public:
      */
     virtual void RenderUI(GameContext *context);
 
-    
-
     /**
      * @brief Whether the object should stay in the engine.
      * @return false if the object should be removed at the start of the next frame.
