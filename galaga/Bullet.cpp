@@ -1,13 +1,14 @@
 #include "Bullet.h"
 #include "Player.h"
 
-Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Point2D heading, bool player,
+Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Vector2D heading, bool player,
                std::weak_ptr<CMPUT350::GameObject> parent)
     : is_bullet_alive(true), shot_by_player(player),
       current_bullet_loc(location), previous_bullet_loc(location), bullet_heading(heading),
       bullet_boundary(location.x, location.y, 2.0f, 2.0f),
       has_hit(false), hit_point(location), bullet_parent(parent), bullet_shapes()
 {
+    UpdateCollisionData();
 }
 
 bool Bullet::IsPlayerBullet()
@@ -27,12 +28,6 @@ void Bullet::Update(CMPUT350::GameContext* context)
     previous_bullet_loc = current_bullet_loc;
     current_bullet_loc += bullet_heading;
 
-    float bullet_boundary_top = std::min(current_bullet_loc.y, previous_bullet_loc.y);
-    float bullet_boundary_left = std::min(current_bullet_loc.x, previous_bullet_loc.x);
-    float bullet_boundary_width = std::max(2.0f, std::abs(current_bullet_loc.x - previous_bullet_loc.x));
-    float bullet_boundary_height = std::max(2.0f, std::abs(current_bullet_loc.y - previous_bullet_loc.y));
-
-
     int screenHeight = context->ScreenContext->GetWindowHeight();
     int screenWidth = context->ScreenContext->GetWindowWidth();
 
@@ -42,7 +37,7 @@ void Bullet::Update(CMPUT350::GameContext* context)
         Kill();
     }
 
-    bullet_boundary = CMPUT350::Rect(bullet_boundary_left, bullet_boundary_top, bullet_boundary_width, bullet_boundary_height);
+    UpdateCollisionData();
 }
 
 void Bullet::LateUpdate(CMPUT350::GameContext* context)
@@ -55,13 +50,24 @@ void Bullet::RenderBackground(CMPUT350::GameContext* context)
 
 void Bullet::RenderForeground(CMPUT350::GameContext* context)
 {
-    if (IsAlive())
+    
+    if (has_hit) {
+        context->ScreenContext->DrawCircle(CMPUT350::Point2D(0.0f, 0.0f), 5.0f, CMPUT350::Colors::magenta);
+    }
+
+    else if (IsAlive())
     {
-        context->ScreenContext->DrawLine(previous_bullet_loc, current_bullet_loc, 2.0f, CMPUT350::Colors::red);
+        context->ScreenContext->DrawLine(previous_bullet_loc - current_bullet_loc,CMPUT350::Point2D(0.0f,0.0f) ,2.0f, CMPUT350::Colors::red);
     }
 }
 
 void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj)
+{
+    CollisionEnter(obj, CMPUT350::Point2D(0.0f, 0.0f));
+}
+
+
+void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj, const CMPUT350::Point2D& collisionPoint)
 {
     std::shared_ptr<Bullet> other_bullet = std::dynamic_pointer_cast<Bullet>(obj);
     std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(obj);
@@ -77,7 +83,10 @@ void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& ob
     {
         return; 
     }
-
+    
+    hit_point = current_bullet_loc + collisionPoint;
+    has_hit = true;
+    current_bullet_loc = hit_point;
     Kill();
 }
 
@@ -99,13 +108,20 @@ const CMPUT350::Rect& Bullet::GetBounds()
     return bullet_boundary;
 }
 CMPUT350::Point2D Bullet::GetLocation() const { return current_bullet_loc; }
-float Bullet::GetRotation() const { return 0.0f; }
+float Bullet::GetRotation() const
+{
+    return 0.0f;
+}
 
 // TODO: Once collisions go through shapes, an empty list means nothing can ever hit.
-const std::vector<CMPUT350::Shape>& Bullet::GetShapes() { return bullet_shapes; }
-void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj,
-                            const CMPUT350::Point2D& collisionPoint)
+const std::vector<CMPUT350::Shape>& Bullet::GetShapes() {
+    return bullet_shapes;
+}
+
+
+void Bullet::UpdateCollisionData()
 {
-    // TODO: save collisionPoint and draw a circle there when the bullet dies.
-    CollisionEnter(obj);
+    bullet_shapes.clear();
+    bullet_shapes.emplace_back(CMPUT350::Line(previous_bullet_loc - current_bullet_loc, CMPUT350::Point2D(0.0f,0.0f)));
+    bullet_boundary = CMPUT350::Rect(previous_bullet_loc - current_bullet_loc, CMPUT350::Point2D(0.0f,0.0f));
 }

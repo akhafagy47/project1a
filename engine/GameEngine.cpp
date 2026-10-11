@@ -227,12 +227,14 @@ void GameEngine::Render() {
 
     for (auto& obj : mGameObjects) {
         if (auto graphics = std::dynamic_pointer_cast<GraphicsObject>(obj)) {
+            SetupTransform(*graphics);
             graphics->RenderBackground(&mContext);
         }
     }
 
     for (auto& obj : mGameObjects) {
         if (auto graphics = std::dynamic_pointer_cast<GraphicsObject>(obj)) {
+            SetupTransform(*graphics);
             graphics->RenderForeground(&mContext);
         }
     }
@@ -276,5 +278,39 @@ EngineView::const_iterator GameEngine::cbegin() const { return mGameObjects.cbeg
 EngineView::const_iterator GameEngine::cend() const { return mGameObjects.cend(); }
 EngineView::const_iterator GameEngine::begin() const { return mGameObjects.begin(); }
 EngineView::const_iterator GameEngine::end() const { return mGameObjects.end(); }
+
+
+void GameEngine::SetupTransform(const GraphicsObject &obj) {
+    mContext.ScreenContext->SetContextRotation(obj.GetRotation());
+    mContext.ScreenContext->SetContextOffset(obj.GetLocation());
+}
+
+Rect GameEngine::GetWorldBounds(CollisionObject &obj) {
+    SetupTransform(obj);
+    return mContext.ScreenContext->Transform(obj.GetBounds());
+}
+
+std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject &obj) {
+    SetupTransform(obj);
+    std::vector<Shape> worldTransformedShape;
+    const std::vector<Shape>& localSpaceShapes = obj.GetShapes();
+    
+    for (const Shape& currentShape : localSpaceShapes) {
+        if (currentShape.t == ShapeType::kCircle) {
+            Point2D interimCenter = mContext.ScreenContext->Transform(currentShape.shape.circle.center);
+            worldTransformedShape.push_back(Shape(Circle(interimCenter, currentShape.shape.circle.radius)));
+        } 
+        else if (currentShape.t == ShapeType::kRect) {
+            Rect interimRect = mContext.ScreenContext->Transform(currentShape.shape.rect);
+            worldTransformedShape.push_back(Shape(interimRect));
+        }
+        else if (currentShape.t == ShapeType::kLine) {
+            Point2D interimP1 = mContext.ScreenContext->Transform(currentShape.shape.line.p1);
+            Point2D interimP2 = mContext.ScreenContext->Transform(currentShape.shape.line.p2);
+            worldTransformedShape.push_back(Shape(Line(interimP1, interimP2)));
+        }
+    }
+    return worldTransformedShape;
+}
 
 }  // namespace CMPUT350
