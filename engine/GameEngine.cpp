@@ -183,7 +183,9 @@ void GameEngine::ProcessCollisions() {
         if (collider == nullptr) {
             continue;  // Not a collision object, skip
         }
-        Rect bounds = collider->GetBounds();
+
+        //bounds converted from local to screen space
+        Rect bounds = GetWorldBounds(*collider);
         colliders.emplace_back(collider, bounds);
     }
 

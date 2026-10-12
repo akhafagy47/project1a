@@ -1,12 +1,12 @@
 #include "Bullet.h"
 #include "Player.h"
+#include "Enemy.h"
 
 Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Vector2D heading, bool player,
                std::weak_ptr<CMPUT350::GameObject> parent)
-    : is_bullet_alive(true), shot_by_player(player),
+    : is_bullet_alive(true), shot_by_player(player), has_hit(false),
       current_bullet_loc(location), previous_bullet_loc(location), bullet_heading(heading),
-      bullet_boundary(location.x, location.y, 2.0f, 2.0f),
-      has_hit(false), hit_point(location), bullet_parent(parent), bullet_shapes()
+      hit_point(location), bullet_parent(parent), bullet_boundary(location.x, location.y, 2.0f, 2.0f), bullet_shapes()
 {
     UpdateCollisionData();
 }
@@ -24,9 +24,19 @@ void Bullet::Initialize(CMPUT350::GameContext* context)
 void Bullet::Update(CMPUT350::GameContext* context)
 {
 
+    if (has_hit)
+    {
+        return;
+    }
     
     previous_bullet_loc = current_bullet_loc;
     current_bullet_loc += bullet_heading;
+
+    std::shared_ptr<CMPUT350::GameObject> parent = bullet_parent.lock();
+    if (parent == nullptr || !parent->IsAlive())
+    {
+        Kill();
+    }
 
     int screenHeight = context->ScreenContext->GetWindowHeight();
     int screenWidth = context->ScreenContext->GetWindowWidth();
@@ -51,13 +61,20 @@ void Bullet::RenderBackground(CMPUT350::GameContext* context)
 void Bullet::RenderForeground(CMPUT350::GameContext* context)
 {
     
-    if (has_hit) {
+    CMPUT350::RGBColor bullet_color = CMPUT350::Colors::red;
+    if (!shot_by_player)
+    {
+        bullet_color = CMPUT350::Colors::yellow;
+    }
+
+    if (has_hit)
+    {
         context->ScreenContext->DrawCircle(CMPUT350::Point2D(0.0f, 0.0f), 5.0f, CMPUT350::Colors::magenta);
     }
 
     else if (IsAlive())
     {
-        context->ScreenContext->DrawLine(previous_bullet_loc - current_bullet_loc,CMPUT350::Point2D(0.0f,0.0f) ,2.0f, CMPUT350::Colors::red);
+        context->ScreenContext->DrawLine(previous_bullet_loc - current_bullet_loc,CMPUT350::Point2D(0.0f,0.0f) ,2.0f, bullet_color);
     }
 }
 
@@ -69,22 +86,30 @@ void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& ob
 
 void Bullet::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj, const CMPUT350::Point2D& collisionPoint)
 {
-    std::shared_ptr<Bullet> other_bullet = std::dynamic_pointer_cast<Bullet>(obj);
-    std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(obj);
-
     // Bullets pass through other bullets and dont kill each other.
-    if (other_bullet != nullptr)
+    if (std::dynamic_pointer_cast<Bullet>(obj) != nullptr)
     {
         return; 
     }
 
     // Makes sure player's own bullets dont kill it when created.
-    if (shot_by_player && player != nullptr)
+    if (shot_by_player && std::dynamic_pointer_cast<Player>(obj) != nullptr)
     {
         return; 
     }
+
+    if (!shot_by_player && std::dynamic_pointer_cast<Enemy>(obj) != nullptr)
+    {
+        return; 
+    }
+
+    CMPUT350::Point2D contact = current_bullet_loc + collisionPoint;
+
+    if (!has_hit || contact.y > hit_point.y)
+    {
+        hit_point = contact;
+    }
     
-    hit_point = current_bullet_loc + collisionPoint;
     has_hit = true;
     current_bullet_loc = hit_point;
     Kill();
@@ -113,7 +138,6 @@ float Bullet::GetRotation() const
     return 0.0f;
 }
 
-// TODO: Once collisions go through shapes, an empty list means nothing can ever hit.
 const std::vector<CMPUT350::Shape>& Bullet::GetShapes() {
     return bullet_shapes;
 }
