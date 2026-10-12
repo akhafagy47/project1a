@@ -1,6 +1,7 @@
 #ifndef BULLET_H
 #define BULLET_H
 
+#include <vector>
 #include "CollisionObject.h"
 #include "GameContext.h"
 
@@ -13,7 +14,7 @@ public:
      * @param heading The vector describing the velocity of the bullet.
      * @param player True if shot by the player, false if shot by an enemy.
      */
-    Bullet(CMPUT350::Point2D location, CMPUT350::Point2D heading, bool player);
+    Bullet(CMPUT350::Point2D location, CMPUT350::Vector2D heading, bool player, std::weak_ptr<CMPUT350::GameObject> parent);
     
     /**
      * @brief Checks the origin of the bullet.
@@ -45,13 +46,6 @@ public:
      */
     void LateUpdate(CMPUT350::GameContext* context) override;
 
-    /**
-     * @brief Handles keyboard input.
-     * @param context Pointer to global GameContext.
-     * @param key The character that is pressed.
-     * @return false because bullets do not respond to keyboard input.
-     */
-    bool HandleKeyEvent(CMPUT350::GameContext* context, char key) override;
 
     /**
      * @brief Checks if bullet is alive in the game.
@@ -99,13 +93,24 @@ public:
      * @return A constant reference to the bullet's Rect boundary.
      */
     const CMPUT350::Rect& GetBounds() override;
+
+    CMPUT350::Point2D GetLocation() const override;
+    float GetRotation() const override;
+    void CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject> &obj, const CMPUT350::Point2D &collisionPoint) override;
+    const std::vector<CMPUT350::Shape> &GetShapes() override;
 private:
+    void UpdateCollisionData();
     bool is_bullet_alive;
     bool shot_by_player;
+    bool has_hit;
     CMPUT350::Point2D current_bullet_loc;
     CMPUT350::Point2D previous_bullet_loc;
     CMPUT350::Point2D bullet_heading;
     CMPUT350::Rect bullet_boundary;
+
+    CMPUT350::Point2D hit_point;
+    std::weak_ptr<CMPUT350::GameObject> bullet_parent;
+    std::vector<CMPUT350::Shape> bullet_shapes;
 
 
 };

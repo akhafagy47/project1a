@@ -22,8 +22,10 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), name,
                                                  sf::Style::Titlebar | sf::Style::Close)),
       mFont(std::make_shared<sf::Font>()),
-      mDrawContext(mWindow, mFont) {
+      mScreenContext(mWindow, mFont),
+      mGUIContext(mWindow, mFont) {
     mWindow->setFramerateLimit(30);
+    mWindow->setKeyRepeatEnabled(false);
 
     // The font is embedded in FontData.h, so it is loaded from memory rather than from disk.
     if (!mFont->openFromMemory(_font, _font_len)) {
@@ -31,7 +33,9 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     }
 
     mContext.mEngineView = this;
-    mContext.ScreenContext = &mDrawContext;
+    mContext.ScreenContext = &mScreenContext;
+    mContext.GUIContext = &mGUIContext;
+    mContext.mNotificationManager = &mNotificationManager;
 }
 
 GameEngine::~GameEngine() {
@@ -63,6 +67,7 @@ void GameEngine::Run() {
 
         // Steps 4-6 are skipped while paused, unless a single frame step was requested
         if (!mPaused || mStepFrame) {
+            mContext.currentFrame = mFrame++;
             // 4. Update game objects
             UpdateObjects();
 
@@ -111,33 +116,40 @@ void GameEngine::AddPendingObjects() {
 
     for (auto& obj : newObjects) {
         mGameObjects.push_back(obj);
+        mContext.CurrObject = obj;
         obj->Initialize(&mContext);
     }
 }
 
 /**
  * @brief Handles all queued SFML events: closes the window on a close event, handles the engine
- * debug keys, and forwards every other low-order ASCII key press to all game objects.
+ * debug keys, and sends notifications to notification manager.
  */
-void GameEngine::ProcessEvents() {
-    while (const std::optional event = mWindow->pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+void GameEngine::ProcessEvents(){
+    while (const std::optional event = mWindow->pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             mWindow->close();
-        } else if (const auto* keyPressed = event->getIf<sf::Event::TextEntered>()) {
-            if (keyPressed->unicode >= 128) {
-                continue;  // Only low-order ASCII characters are supported
-            }
-            char key = static_cast<char>(keyPressed->unicode);
-
-            if (key == 'p') {
+        }
+        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::P)
+            {
                 mPaused = !mPaused;
-            } else if (key == 'n' && mPaused) {
-                mStepFrame = true;
-            } else {
-                for (auto& obj : mGameObjects) {
-                    obj->HandleKeyEvent(&mContext, key);
-                }
             }
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::N && mPaused)
+            {
+                mStepFrame = true;
+            }
+            else
+            {
+                HandleKey(static_cast<int>(keyPressed->scancode), true);
+            }
+        }
+        else if (const auto* released = event->getIf<sf::Event::KeyReleased>())
+        {
+            HandleKey(static_cast<int>(released->scancode), false);
         }
     }
 }
@@ -147,6 +159,7 @@ void GameEngine::ProcessEvents() {
  */
 void GameEngine::UpdateObjects() {
     for (auto& obj : mGameObjects) {
+        mContext.CurrObject = obj;
         obj->Update(&mContext);
     }
 }
@@ -169,7 +182,9 @@ void GameEngine::ProcessCollisions() {
         if (collider == nullptr) {
             continue;  // Not a collision object, skip
         }
-        Rect bounds = collider->GetBounds();
+
+        //bounds converted from local to screen space
+        Rect bounds = GetWorldBounds(*collider);
         colliders.emplace_back(collider, bounds);
     }
 
@@ -196,6 +211,7 @@ void GameEngine::ProcessCollisions() {
  */
 void GameEngine::LateUpdateObjects() {
     for (auto& obj : mGameObjects) {
+        mContext.CurrObject = obj;
         obj->LateUpdate(&mContext);
     }
 }
@@ -212,12 +228,14 @@ void GameEngine::Render() {
 
     for (auto& obj : mGameObjects) {
         if (auto graphics = std::dynamic_pointer_cast<GraphicsObject>(obj)) {
+            SetupTransform(*graphics);
             graphics->RenderBackground(&mContext);
         }
     }
 
     for (auto& obj : mGameObjects) {
         if (auto graphics = std::dynamic_pointer_cast<GraphicsObject>(obj)) {
+            SetupTransform(*graphics);
             graphics->RenderForeground(&mContext);
         }
     }
@@ -227,6 +245,73 @@ void GameEngine::Render() {
     }
 
     mWindow->display();
+}
+
+void GameEngine::InstallKeyDownNotification(int key, const std::string& notification)
+{
+    mKeyDownNotifications[key].push_back(notification);
+}
+void GameEngine::InstallKeyUpNotification(int key, const std::string& notification)
+{
+    mKeyUpNotifications[key].push_back(notification);
+}
+
+void GameEngine::HandleKey(int key, bool down)
+{
+    auto* key_map = &mKeyUpNotifications;
+    if (down)
+    {
+        key_map = &mKeyDownNotifications;
+    }
+    auto found_entry = key_map->find(key);
+
+    if (found_entry == key_map->end())
+    {
+        return;
+    }
+    for (const std::string& notification : found_entry->second)
+    {
+        mNotificationManager.Notify(notification);
+    }
+}
+
+EngineView::const_iterator GameEngine::cbegin() const { return mGameObjects.cbegin(); }
+EngineView::const_iterator GameEngine::cend() const { return mGameObjects.cend(); }
+EngineView::const_iterator GameEngine::begin() const { return mGameObjects.begin(); }
+EngineView::const_iterator GameEngine::end() const { return mGameObjects.end(); }
+
+
+void GameEngine::SetupTransform(const GraphicsObject &obj) {
+    mContext.ScreenContext->SetContextRotation(obj.GetRotation());
+    mContext.ScreenContext->SetContextOffset(obj.GetLocation());
+}
+
+Rect GameEngine::GetWorldBounds(CollisionObject &obj) {
+    SetupTransform(obj);
+    return mContext.ScreenContext->Transform(obj.GetBounds());
+}
+
+std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject &obj) {
+    SetupTransform(obj);
+    std::vector<Shape> worldTransformedShape;
+    const std::vector<Shape>& localSpaceShapes = obj.GetShapes();
+    
+    for (const Shape& currentShape : localSpaceShapes) {
+        if (currentShape.t == ShapeType::kCircle) {
+            Point2D interimCenter = mContext.ScreenContext->Transform(currentShape.shape.circle.center);
+            worldTransformedShape.push_back(Shape(Circle(interimCenter, currentShape.shape.circle.radius)));
+        } 
+        else if (currentShape.t == ShapeType::kRect) {
+            Rect interimRect = mContext.ScreenContext->Transform(currentShape.shape.rect);
+            worldTransformedShape.push_back(Shape(interimRect));
+        }
+        else if (currentShape.t == ShapeType::kLine) {
+            Point2D interimP1 = mContext.ScreenContext->Transform(currentShape.shape.line.p1);
+            Point2D interimP2 = mContext.ScreenContext->Transform(currentShape.shape.line.p2);
+            worldTransformedShape.push_back(Shape(Line(interimP1, interimP2)));
+        }
+    }
+    return worldTransformedShape;
 }
 
 }  // namespace CMPUT350

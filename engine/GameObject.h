@@ -1,6 +1,7 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include <string>
 namespace CMPUT350 {
 
 class GameContext;
@@ -41,14 +42,6 @@ public:
     virtual void RenderUI(GameContext *context);
 
     /**
-     * @brief Called for every key press (low-order ASCII characters only).
-     * @param context Engine and drawing context for this frame.
-     * @param key The character that was typed.
-     * @return true if the object handled the key, false otherwise.
-     */
-    virtual bool HandleKeyEvent(GameContext *context, char key);
-
-    /**
      * @brief Whether the object should stay in the engine.
      * @return false if the object should be removed at the start of the next frame.
      */
@@ -58,6 +51,8 @@ public:
      * @brief Marks the object as dead so the engine removes it at the start of the next frame.
      */
     virtual void Kill();
+
+    virtual void ReceiveNotification(const std::string &key);
 
 private:
     bool mAlive = true;

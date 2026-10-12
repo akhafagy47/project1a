@@ -7,7 +7,7 @@ void GameObject::Initialize(GameContext *context) {}
 void GameObject::Update(GameContext *context) {}
 void GameObject::LateUpdate(GameContext *context) {}
 void GameObject::RenderUI(GameContext *context) {}
-bool GameObject::HandleKeyEvent(GameContext *context, char key) { return false; }
+void GameObject::ReceiveNotification(const std::string &key) {}
 bool GameObject::IsAlive() const { return mAlive; }
 void GameObject::Kill() { mAlive = false; }
 }  // namespace CMPUT350

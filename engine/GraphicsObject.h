@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_OBJECT_H
 #define GRAPHICS_OBJECT_H
 
+#include "MathUtil.h"
 #include "GameObject.h"
 
 namespace CMPUT350 {
@@ -26,6 +27,10 @@ public:
      * @param context Engine and drawing context for this frame.
      */
     virtual void RenderForeground(GameContext *context);
+
+    virtual Point2D GetLocation() const = 0;
+    
+    virtual float GetRotation() const = 0;
 };
 
 }  // namespace CMPUT350

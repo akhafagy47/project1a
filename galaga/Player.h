@@ -1,5 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
+
+#include <string>
+#include <vector>
+
+
 class Bullet;
 
 #include "CollisionObject.h"
@@ -37,17 +42,6 @@ public:
      */
     void LateUpdate(CMPUT350::GameContext* context) override;
 
-    /**
-     * @brief Handles keyboard input for moving and shooting.
-     * 
-     * Maps 'a' and 'd' keys for left and right motion, and spacebar 
-     * for shooting bullets. Limits player to maximum of two active bullets.
-     * 
-     * @param context Pointer to global GameContext to add bullets.
-     * @param key The character pressed.
-     * @return true if the key caused an action but false if not.
-     */
-    bool HandleKeyEvent(CMPUT350::GameContext* context, char key) override;
 
     /**
      * @brief Checks if the player is currently alive.
@@ -95,12 +89,18 @@ public:
      * @return A constant reference to the player's Rect boundary.
      */
     const CMPUT350::Rect& GetBounds() override;
+
+    void ReceiveNotification(const std::string &key) override;
+    CMPUT350::Point2D GetLocation() const override;
+    float GetRotation() const override;
+    const std::vector<CMPUT350::Shape> &GetShapes() override;
 private:
     bool is_player_alive;
     CMPUT350::Rect player_boundary;
     CMPUT350::Point2D player_loc;
     std::weak_ptr<Bullet> player_bullet_1;
     std::weak_ptr<Bullet> player_bullet_2;
+    std::vector<CMPUT350::Shape> player_shapes;
 
 
 

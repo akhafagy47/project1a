@@ -2,11 +2,15 @@
 #define RENDERTARGET_H
 
 #include <cstdint>
-
+#include <string>
 #include "MathUtil.h"
 #include <SFML/Graphics.hpp>
+#include <memory>
+
 
 namespace CMPUT350 {
+
+class GameEngine;
 
 struct RGBColor {
     uint8_t r, g, b;
@@ -102,6 +106,17 @@ public:
 private:
     std::shared_ptr<sf::RenderWindow> mWindow;
     std::shared_ptr<sf::Font> mFont;
+
+    friend class GameEngine;
+    void SetContextOffset(Point2D p);
+    void SetContextRotation(float rotation);
+    Point2D Transform(Point2D p);
+    Point2D ReverseTransform(Point2D p);
+    Rect Transform(Rect r);
+    Point2D mOffset;
+    float mRotation = 0.0f;
+    float mCos = 1.0f;
+    float mSin = 0.0f;
 };
 
 }  // namespace CMPUT350

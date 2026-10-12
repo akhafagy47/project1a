@@ -135,6 +135,9 @@ struct Point2D {
     }
 };
 
+using Vector2D = Point2D;
+
+
 /// @brief Puts a formatted Point2D into the output stream.
 static std::ostream &operator<<(std::ostream &os, const Point2D &p) {
     // TODO: write this code
@@ -215,7 +218,7 @@ struct Line {
      * @param crossingPoint Reference to a Point2D which stores intersection coordinate if they cross.
      * @return true if the line segments intersect, false if they don't.
      */
-    bool Crosses(Line other, Point2D &crossingPoint) const {
+    bool Crosses(const Line &other, Point2D &crossingPoint) const {
         // TODO: write this code
        Point2D this_line_vector = p2 - p1;
         Point2D other_line_vector = other.p2 - other.p1;
@@ -265,6 +268,11 @@ struct Circle {
     Circle(float x, float y, float r) : center(x, y), radius(r) {}
 };
 
+
+static std::ostream &operator<<(std::ostream &os, const Circle &c) {
+    os << "Circle[" << c.center << ", r=" << c.radius << "]";
+    return os;
+}
 /**
  * @struct Rect
  * @brief Represents an axis-aligned 2D bounding box.
