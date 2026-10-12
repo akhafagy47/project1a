@@ -125,8 +125,7 @@ void GameEngine::AddPendingObjects() {
  * @brief Handles all queued SFML events: closes the window on a close event, handles the engine
  * debug keys, and sends notifications to notification manager.
  */
-void GameEngine::ProcessEvents()
-{
+void GameEngine::ProcessEvents(){
     while (const std::optional event = mWindow->pollEvent())
     {
         if (event->is<sf::Event::Closed>())
