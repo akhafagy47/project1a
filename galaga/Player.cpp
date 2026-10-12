@@ -96,4 +96,6 @@ const CMPUT350::Rect& Player::GetBounds()
 void Player::ReceiveNotification(const std::string &key) {}
 CMPUT350::Point2D Player::GetLocation() const { return player_loc; }
 float Player::GetRotation() const { return 0.0f; }
+
+// TODO: Once collisions go through shapes, an empty list means nothing can ever hit the player. 
 const std::vector<CMPUT350::Shape>& Player::GetShapes() { return player_shapes; }

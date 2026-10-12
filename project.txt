@@ -1,0 +1,6 @@
+Project 1b: Overview:
+
+
+Changes beyond API:
+
+- Bezier::GetMaxT() const: returns the largest valid value of t for a curve, representing the number of cubic segments. This was added to enable enemies to see if they have reached the end of their path.

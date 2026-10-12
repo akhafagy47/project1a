@@ -95,6 +95,7 @@ private:
 
 };
 
+
 }  // namespace CMPUT350
 
 #endif  // GAMEENGINE_H

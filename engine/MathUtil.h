@@ -135,6 +135,9 @@ struct Point2D {
     }
 };
 
+using Vector2D = Point2D;
+
+
 /// @brief Puts a formatted Point2D into the output stream.
 static std::ostream &operator<<(std::ostream &os, const Point2D &p) {
     // TODO: write this code
