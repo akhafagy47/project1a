@@ -69,8 +69,9 @@ public:
     void CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj) override;
 
     /**
-     * @brief The enemy's world-space bounding box, accounting for its rotation.
-     * @return Reference to the bounds, valid until the next call.
+     * @brief The enemy's bounding box in local space: a square centered on (0, 0). The engine
+     * applies the location and rotation to get the world-space box.
+     * @return Reference to the bounds.
      */
     const CMPUT350::Rect& GetBounds() override;
 
@@ -191,7 +192,7 @@ private:
     int mMaxHealth = 1;
     int mPendingHits = 0;
 
-    CMPUT350::Rect mBounds;
+    CMPUT350::Rect mBounds;  // Local space; declared before mShapes, which is built from it
     std::vector<CMPUT350::Shape> mShapes;
 };
 

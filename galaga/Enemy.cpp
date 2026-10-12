@@ -37,8 +37,9 @@ Enemy::Enemy(CMPUT350::Point2D home, std::vector<CMPUT350::Point2D> entryPath)
       mHeading(0.0f, 1.0f),
       mHome(home),
       mEntryPath(std::move(entryPath)),
-      mShapes{CMPUT350::Rect(-kCollisionHalfSize, -kCollisionHalfSize, 2 * kCollisionHalfSize,
-                             2 * kCollisionHalfSize)}
+      mBounds(-kCollisionHalfSize, -kCollisionHalfSize, 2 * kCollisionHalfSize,
+              2 * kCollisionHalfSize),
+      mShapes{mBounds}
 {
 }
 
@@ -150,17 +151,7 @@ void Enemy::CollisionEnter(const std::shared_ptr<CMPUT350::CollisionObject>& obj
     // Anything else (enemy bullets, other enemies) is ignored
 }
 
-const CMPUT350::Rect& Enemy::GetBounds()
-{
-    // Bounding box of the collision square after rotation
-    float c = std::fabs(std::cos(mRotation));
-    float s = std::fabs(std::sin(mRotation));
-    float halfWidth = kCollisionHalfSize * (c + s);
-    float halfHeight = kCollisionHalfSize * (s + c);
-    mBounds = CMPUT350::Rect(mLocation.x - halfWidth, mLocation.y - halfHeight, 2 * halfWidth,
-                             2 * halfHeight);
-    return mBounds;
-}
+const CMPUT350::Rect& Enemy::GetBounds() { return mBounds; }
 
 const std::vector<CMPUT350::Shape>& Enemy::GetShapes() { return mShapes; }
 
