@@ -405,7 +405,7 @@ void Enemy2::Initialize(CMPUT350::GameContext* context)
     Enemy::Initialize(context);
 }
 
-bool Enemy2::Attack(CMPUT350::GameContext* context, const CMPUT350::Point2D& target)
+bool Enemy2::Attack(CMPUT350::GameContext* /*context*/, const CMPUT350::Point2D& target)
 {
     if (!IsInFormation())
     {
