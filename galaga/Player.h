@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-
+#include <memory>
 
 class Bullet;
 
@@ -94,8 +94,19 @@ public:
     CMPUT350::Point2D GetLocation() const override;
     float GetRotation() const override;
     const std::vector<CMPUT350::Shape> &GetShapes() override;
+
+    //used as reference: https://en.cppreference.com/w/cpp/language/constexpr
+    static constexpr const char* shift_left_key = "ShiftLeft";
+    static constexpr const char* shift_right_key = "ShiftRight";
+    static constexpr const char* stop_left_key = "StopLeft";
+    static constexpr const char* stop_right_key = "StopRight";
+    static constexpr const char* fire_key = "FireBullet";
 private:
+    void FireBullet(CMPUT350::GameContext* context);
     bool is_player_alive;
+    bool shifting_left;
+    bool shifting_right;
+    bool requesting_fire;
     CMPUT350::Rect player_boundary;
     CMPUT350::Point2D player_loc;
     std::weak_ptr<Bullet> player_bullet_1;
