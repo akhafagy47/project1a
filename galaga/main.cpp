@@ -1,145 +1,96 @@
-#include <random>
+// TEMPORARY main for testing the engine and enemies until the Galaga class exists. It will be
+// replaced by the spec's main, which only adds a Galaga object to the engine.
+#include <memory>
+#include <vector>
+
+#include "Enemy.h"
 #include "GameEngine.h"
 #include "Player.h"
-#include "Enemy.h"
 #include "Stars.h"
 
-class Ball : public CMPUT350::CollisionObject
+/**
+ * @brief Test-only stand-in for Galaga's attack logic: every 90 frames, asks the next enemy in
+ * formation to attack the player.
+ */
+class AttackDriver : public CMPUT350::GameObject
 {
 public:
-    Ball(int radius) : CollisionObject(), mRadius(radius), mNumCollisions(0), mLoc(radius, radius), mSpeed(3, 3),
-                       mSpeedNext(3, 3), mFrameCollisions(0)
-    {
-        std::uniform_int_distribution<int> xRand(mRadius, 1024 - mRadius);
-        std::uniform_int_distribution<int> yRand(mRadius, 768 - mRadius);
-        std::uniform_int_distribution<int> speed(1, 5);
-
-        // Initialize ball with a random position and speed
-        mLoc.x = xRand(gen);
-        mLoc.y = yRand(gen);
-        mSpeed.x = speed(gen); // Random speed between 1 and 5
-        mSpeed.y = speed(gen); // Random speed between 1 and 5
-    }
+    explicit AttackDriver(std::weak_ptr<Player> player) : mPlayer(std::move(player)) {}
 
     void Update(CMPUT350::GameContext* context) override
     {
-        // Update ball position or state
-        mLoc += mSpeedNext;
-        mSpeed = mSpeedNext;
-        if (mLoc.x > 1024 - mRadius || mLoc.x < mRadius)
+        std::shared_ptr<Player> player = mPlayer.lock();
+        if (player == nullptr || context->currentFrame % 90 != 0)
         {
-            mSpeed.x = -mSpeed.x;
-            if (mSpeed.x > 0)
-                mSpeed.x++;
+            return;
         }
-        if (mLoc.y > 768 - mRadius || mLoc.y < mRadius)
-        {
-            mSpeed.y = -mSpeed.y;
-            if (mSpeed.y > 0)
-                mSpeed.y++;
-        }
-        if (mNumCollisions % 10 == 8)
-        {
-            std::uniform_int_distribution<int> size(50, 150);
-            context->mEngineView->AddGameObject(std::make_shared<Ball>(size(gen)));
-            mNumCollisions++;
-        }
-        mSpeedNext = mSpeed;
-    }
 
-    void LateUpdate(CMPUT350::GameContext* context) override
-    {
-        if (mFrameCollisions > 0)
-            mNumCollisions++;
-        mFrameCollisions = 0;
-    }
-
-    void CollisionEnter(const std::shared_ptr<CollisionObject>& obj) override
-    {
-        std::shared_ptr<Ball> ball = std::dynamic_pointer_cast<Ball>(obj);
-        // Only collisions with other Balls
-        if (ball != nullptr)
+        // Walk the engine's objects starting after the last attacker, so attacks rotate
+        std::vector<std::shared_ptr<Enemy>> enemies;
+        for (const auto& object : *context->mEngineView)
         {
-            CMPUT350::Point2D b1 = mLoc;
-            CMPUT350::Point2D b2 = ball->mLoc;
-            if (b1.Distance(b2) <= ball->mRadius + mRadius) // Are the balls within radius
+            if (auto enemy = std::dynamic_pointer_cast<Enemy>(object))
             {
-                mFrameCollisions++;
-                CMPUT350::Point2D normal = b1 - b2;
-                normal /= normal.Distance(CMPUT350::Point2D(0, 0));
-                mCollisionPoint = normal * (-mRadius);
-                float m1 = 3.14f * mRadius * mRadius; // mass of this ball
-                float m2 = 3.14f * ball->mRadius * ball->mRadius; // mass of other ball
-                CMPUT350::Point2D v1prime = mSpeed - (2 * m2 / (m1 + m2)) * ((normal * (mSpeed - ball->mSpeed)) *
-                    normal);
-                mSpeedNext = v1prime;
+                enemies.push_back(enemy);
             }
         }
-    }
-
-    const CMPUT350::Rect& GetBounds() override
-    {
-        static CMPUT350::Rect bounds({0, 0}, 0, 0); // Initialize with dummy values
-        bounds = CMPUT350::Rect(mLoc - mRadius, 2 * mRadius, 2 * mRadius);
-        return bounds;
-    }
-
-    bool IsAlive() const override
-    {
-        return mNumCollisions < 10;
-    }
-
-    void RenderForeground(CMPUT350::GameContext* context) override
-    {
-        context->ScreenContext->DrawCircle(mLoc, mRadius, CMPUT350::Colors::red);
-        context->ScreenContext->DrawCenteredText("Circle" + std::to_string(mNumCollisions), mRadius / 6.0f, mLoc,
-                                                 CMPUT350::Colors::white);
-        context->ScreenContext->DrawLine(mLoc, mLoc + mCollisionPoint, mRadius * 0.1f, CMPUT350::Colors::blue);
+        for (size_t i = 0; i < enemies.size(); i++)
+        {
+            mNext = (mNext + 1) % enemies.size();
+            if (enemies[mNext]->Attack(context, player->GetLocation()))
+            {
+                return;
+            }
+        }
     }
 
 private:
-    static std::random_device rd;
-    static std::mt19937 gen;
-
-    int mRadius, mNumCollisions, mFrameCollisions;
-    CMPUT350::Point2D mLoc, mSpeed, mSpeedNext, mCollisionPoint;
+    std::weak_ptr<Player> mPlayer;
+    size_t mNext = 0;
 };
 
-// Shared randoms across all balls
-// These are the actual objeects associated with the class. Normally these
-// would be in a C++ file
-std::random_device Ball::rd;
-std::mt19937 Ball::gen(rd());
+/**
+ * @brief Builds a one-segment entry path from off-screen to a formation slot, curving through
+ * the middle of the screen and rising into the slot from below.
+ */
+static std::vector<CMPUT350::Point2D> EntryPath(CMPUT350::Point2D home, bool fromLeft)
+{
+    CMPUT350::Point2D start(fromLeft ? -40.0f : 808.0f, 500.0f);
+    return {start, CMPUT350::Point2D(384.0f, 800.0f), home + CMPUT350::Point2D(0.0f, 250.0f), home};
+}
 
 int main()
 {
-    bool mBallSsample = false;
+    CMPUT350::GameEngine engine(768, 1024, "Galaga");
+    auto player = std::make_shared<Player>(CMPUT350::Point2D(384.0f, 900.0f));
+    engine.AddGameObject(player);
+    engine.AddGameObject(std::make_shared<Stars>(250, CMPUT350::Rect(0, 0, 768, 1024)));
 
-    if (mBallSsample)
+    // Three rows of eight: bosses on top, then butterflies, then bees
+    for (int row = 0; row < 3; row++)
     {
-        CMPUT350::GameEngine engine(1024, 768, "Ball Simulation");
-        engine.AddGameObject(std::make_shared<Ball>(100));
-        engine.AddGameObject(std::make_shared<Ball>(50));
-        engine.Run();
-    }
-    else
-    {
-        CMPUT350::GameEngine engine(768, 1024, "Galaga");
-        auto player = std::make_shared<Player>(CMPUT350::Point2D(768 / 2, 900));
-        engine.AddGameObject(player);
-        engine.AddGameObject(std::make_shared<Stars>(250, CMPUT350::Rect(0, 0, 768, 1024)));
-
-        //Spawns 5 columns and 8 rows of enemies. 
-        for (int y = 0; y < 5; y++)
+        for (int column = 0; column < 8; column++)
         {
-            for (int x = 0; x < 8; x++)
+            CMPUT350::Point2D home(104.0f + column * 80.0f, 100.0f + row * 70.0f);
+            std::vector<CMPUT350::Point2D> path = EntryPath(home, column < 4);
+            std::shared_ptr<Enemy> enemy;
+            if (row == 0)
             {
-                auto enemy = std::make_shared<Enemy>(CMPUT350::Point2D(104.0f + x*80, 80.0f + y*60.0f));
-                engine.AddGameObject(enemy);
+                enemy = std::make_shared<Enemy3>(home, path);
             }
+            else if (row == 1)
+            {
+                enemy = std::make_shared<Enemy2>(home, path);
+            }
+            else
+            {
+                enemy = std::make_shared<Enemy1>(home, path);
+            }
+            engine.AddGameObject(enemy);
         }
-        
-        engine.Run();
     }
+    engine.AddGameObject(std::make_shared<AttackDriver>(player));
+
+    engine.Run();
     return 0;
 }
