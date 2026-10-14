@@ -73,7 +73,7 @@ private:
     Rect GetWorldBounds(CollisionObject &obj);
     std::vector<Shape> GetWorldShapes(CollisionObject &obj);
     static bool FirstContact(const Line &line, const Shape &other, Point2D &point);
-    static bool ShapesOverlap(const Shape &a, const Shape &b);
+    static bool ShapesOverlap(const Shape &shapeOne, const Shape &shapeTwo);
     bool ObjectsCollide(CollisionObject &a, CollisionObject &b, Point2D &pointA, bool &hasPointA, Point2D &pointB, bool &hasPointB);
 
     std::shared_ptr<sf::RenderWindow> mWindow;

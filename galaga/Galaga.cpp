@@ -68,15 +68,15 @@ void Galaga::Initialize(CMPUT350::GameContext* context)
     engine->InstallKeyDownNotification(CMPUT350::Key::Num1, kStartGame);
     for (unsigned int key : {CMPUT350::Key::A, CMPUT350::Key::Left})
     {
-        engine->InstallKeyDownNotification(key, kMoveLeft);
-        engine->InstallKeyUpNotification(key, kStopLeft);
+        engine->InstallKeyDownNotification(key, Player::shift_left_key);
+        engine->InstallKeyUpNotification(key, Player::stop_left_key);
     }
     for (unsigned int key : {CMPUT350::Key::D, CMPUT350::Key::Right})
     {
-        engine->InstallKeyDownNotification(key, kMoveRight);
-        engine->InstallKeyUpNotification(key, kStopRight);
+        engine->InstallKeyDownNotification(key, Player::shift_right_key);
+        engine->InstallKeyUpNotification(key, Player::stop_right_key);
     }
-    engine->InstallKeyDownNotification(CMPUT350::Key::Space, kFire);
+    engine->InstallKeyDownNotification(CMPUT350::Key::Space, Player::fire_key);
 
     CMPUT350::NotificationManager* notifications = context->mNotificationManager;
     notifications->Register(context->CurrObject, kInsertCoin);
@@ -224,22 +224,10 @@ void Galaga::ReceiveNotification(const std::string& key)
 }
 
 /**
- * @brief Switches state, restarting the state's frame counter. The player is paused while the
- * stage banner or the respawn message is shown.
+ * @brief Switches state, restarting the state's frame counter.
  */
 void Galaga::ChangeState(State next, CMPUT350::GameContext* context)
 {
-    bool wasPaused = mState == State::Startup || mState == State::PlayerDown;
-    bool paused = next == State::Startup || next == State::PlayerDown;
-    if (wasPaused && !paused)
-    {
-        context->mNotificationManager->Notify(kResumePlayer);
-    }
-    else if (!wasPaused && paused)
-    {
-        context->mNotificationManager->Notify(kPausePlayer);
-    }
-
     switch (next)
     {
     case State::Startup:

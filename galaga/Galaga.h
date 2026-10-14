@@ -27,17 +27,6 @@ class Player;
 class Galaga : public CMPUT350::GameObject
 {
 public:
-    // Notifications sent by the engine for the player's controls. The player registers for these.
-    static constexpr const char* kMoveLeft = "MoveLeft";
-    static constexpr const char* kStopLeft = "StopLeft";
-    static constexpr const char* kMoveRight = "MoveRight";
-    static constexpr const char* kStopRight = "StopRight";
-    static constexpr const char* kFire = "Fire";
-
-    // Notifications sent to the player while it should stay still (stage banner, respawn).
-    static constexpr const char* kPausePlayer = "PausePlayer";
-    static constexpr const char* kResumePlayer = "ResumePlayer";
-
     /**
      * @brief Constructs the game manager.
      * @param width Width of the play area in pixels.
