@@ -13,7 +13,6 @@ Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Vector2D heading, bool play
 
 bool Bullet::IsPlayerBullet()
 {
-    // TODO: Update
     return shot_by_player;
 }
 
@@ -122,14 +121,12 @@ void Bullet::Kill()
 
 bool Bullet::IsAlive() const
 {
-    // TODO: Update code
     
     return is_bullet_alive;
 }
 
 const CMPUT350::Rect& Bullet::GetBounds()
 {
-    // TODO: Update code
     return bullet_boundary;
 }
 CMPUT350::Point2D Bullet::GetLocation() const { return current_bullet_loc; }

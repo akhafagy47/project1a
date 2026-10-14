@@ -53,13 +53,13 @@ void Player::Update(CMPUT350::GameContext* context)
     int screenWidth = context->ScreenContext->GetWindowWidth();
 
     //Prevents the player from exiting the left bound of the screen.
-    if (player_loc.x -20.0f < 0.0f) 
+    if (player_loc.x -player_half_width < 0.0f) 
     {
         player_loc.x = 20.0f;
     }
 
     //Prevents the player from exiting the right bound of the screen.
-    if (player_loc.x + 20.0f > screenWidth)
+    if (player_loc.x + player_half_width > screenWidth)
     {
         player_loc.x = screenWidth - 20.0f;
     }
@@ -119,13 +119,11 @@ void Player::Kill()
 
 bool Player::IsAlive() const
 {
-    // TODO: Update code
     return is_player_alive;
 }
 
 const CMPUT350::Rect& Player::GetBounds()
 {
-    // TODO: Update code
     return player_boundary;
 }
 void Player::ReceiveNotification(const std::string &key)
@@ -189,7 +187,6 @@ void Player::FireBullet(CMPUT350::GameContext* context)
 CMPUT350::Point2D Player::GetLocation() const { return player_loc; }
 float Player::GetRotation() const { return 0.0f; }
 
-// TODO: Once collisions go through shapes, an empty list means nothing can ever hit the player. 
 const std::vector<CMPUT350::Shape>& Player::GetShapes()
 {
     return player_shapes;

@@ -175,9 +175,7 @@ void GameEngine::UpdateObjects() {
  * If a line shape hits something, it also passes the exact point of impact.
  */
 void GameEngine::ProcessCollisions() {
-    // Collect collision objects and a copy of their bounds once, instead of casting and calling
-    // GetBounds() for every pair. The bounds are copied because GetBounds() returns a reference
-    // that may be overwritten by the next call (e.g. if an object returns a static Rect).
+    // Collect the collision objects once, instead of casting every object for every pair.
     std::vector<std::shared_ptr<CollisionObject>> colliders;
     for (auto& obj : mGameObjects) {
         std::shared_ptr<CollisionObject> collider = std::dynamic_pointer_cast<CollisionObject>(obj);
@@ -514,8 +512,10 @@ bool GameEngine::ObjectsCollide(CollisionObject& a, CollisionObject& b, Point2D&
     float shortestDistA = std::numeric_limits<float>::max();
     bool hasCollision = false;
     
-    for (const Shape& currentShapeA : GetWorldShapes(a)) {
-        for (const Shape& currentShapeB : GetWorldShapes(b)) {
+    std::vector<Shape> shapesA = GetWorldShapes(a);
+    std::vector<Shape> shapesB = GetWorldShapes(b);
+    for (const Shape& currentShapeA : shapesA) {
+        for (const Shape& currentShapeB : shapesB) {
             
             Point2D currentContactPoint;
             
