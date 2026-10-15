@@ -55,13 +55,13 @@ void Player::Update(CMPUT350::GameContext* context)
     //Prevents the player from exiting the left bound of the screen.
     if (player_loc.x -player_half_width < 0.0f) 
     {
-        player_loc.x = 20.0f;
+        player_loc.x = player_half_width;
     }
 
     //Prevents the player from exiting the right bound of the screen.
     if (player_loc.x + player_half_width > screenWidth)
     {
-        player_loc.x = screenWidth - 20.0f;
+        player_loc.x = screenWidth - player_half_width;
     }
 
 
@@ -74,11 +74,11 @@ void Player::Update(CMPUT350::GameContext* context)
 
 }
 
-void Player::LateUpdate(CMPUT350::GameContext* context)
+void Player::LateUpdate(CMPUT350::GameContext*)
 {
 }
 
-void Player::RenderBackground(CMPUT350::GameContext* context)
+void Player::RenderBackground(CMPUT350::GameContext*)
 {
 }
 
