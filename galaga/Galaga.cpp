@@ -23,7 +23,6 @@ const int kTotalEnemies = kWaves * kShipsPerWave;
 const int kWaveInterval = 60;  // Frames between the first ships of consecutive waves
 const int kShipSpacing = 7;    // Frames between ships in a wave
 
-const int kFormationRows = 5;
 const int kFormationColumns = 8;
 const float kColumnSpacing = 70.0f;
 const float kRowSpacing = 60.0f;
@@ -105,7 +104,7 @@ void Galaga::Update(CMPUT350::GameContext* context)
             mStage = 1;
             mHasPlayer = false;
             mPlayerDied = false;
-            ChangeState(State::Startup, context);
+            ChangeState(State::Startup);
         }
     }
 
@@ -113,7 +112,7 @@ void Galaga::Update(CMPUT350::GameContext* context)
     bool inPlay = mState == State::Startup || mState == State::Waves || mState == State::Playing;
     if (inPlay && mHasPlayer && (mPlayerDied || !PlayerAlive()))
     {
-        HandlePlayerDied(context);
+        HandlePlayerDied();
     }
 
     switch (mState)
@@ -226,7 +225,7 @@ void Galaga::ReceiveNotification(const std::string& key)
 /**
  * @brief Switches state, restarting the state's frame counter.
  */
-void Galaga::ChangeState(State next, CMPUT350::GameContext* context)
+void Galaga::ChangeState(State next)
 {
     switch (next)
     {
@@ -262,7 +261,7 @@ void Galaga::UpdateStartup(CMPUT350::GameContext* context)
     }
     if (mStateFrames >= kStartupFrames)
     {
-        ChangeState(State::Waves, context);
+        ChangeState(State::Waves);
     }
 }
 
@@ -288,7 +287,7 @@ void Galaga::UpdateWaves(CMPUT350::GameContext* context)
 
     if (mSpawned == kTotalEnemies && AllEnemiesInFormation(context))
     {
-        ChangeState(State::Playing, context);
+        ChangeState(State::Playing);
     }
 }
 
@@ -301,7 +300,7 @@ void Galaga::UpdatePlaying(CMPUT350::GameContext* context)
     if (mEnemiesAlive == 0)
     {
         mStage++;
-        ChangeState(State::Startup, context);
+        ChangeState(State::Startup);
         return;
     }
 
@@ -338,7 +337,7 @@ void Galaga::UpdatePlayerDown(CMPUT350::GameContext* context)
     {
         SpawnPlayer(context);  // Startup spawns the player itself
     }
-    ChangeState(mResumeState, context);
+    ChangeState(mResumeState);
 }
 
 /**
@@ -349,7 +348,7 @@ void Galaga::UpdateGameOver(CMPUT350::GameContext* context)
     if (mStateFrames >= kGameOverFrames)
     {
         KillEnemiesAndBullets(context);
-        ChangeState(State::WaitingForCoin, context);
+        ChangeState(State::WaitingForCoin);
     }
 }
 
@@ -489,7 +488,7 @@ void Galaga::OrderAttack(CMPUT350::GameContext* context)
  * @brief Takes a life and waits for the formation before respawning, or ends the game if no
  * lives are left.
  */
-void Galaga::HandlePlayerDied(CMPUT350::GameContext* context)
+void Galaga::HandlePlayerDied()
 {
     mHasPlayer = false;
     mPlayerDied = false;
@@ -497,13 +496,13 @@ void Galaga::HandlePlayerDied(CMPUT350::GameContext* context)
     if (mLives <= 0)
     {
         mLives = 0;
-        ChangeState(State::GameOver, context);
+        ChangeState(State::GameOver);
         return;
     }
 
     // Dying during the stage banner restarts the banner; otherwise continue where the game was
     mResumeState = mState;
-    ChangeState(State::PlayerDown, context);
+    ChangeState(State::PlayerDown);
 }
 
 /**

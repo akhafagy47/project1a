@@ -72,7 +72,7 @@ private:
         GameOver
     };
 
-    void ChangeState(State next, CMPUT350::GameContext* context);
+    void ChangeState(State next);
     void UpdateStartup(CMPUT350::GameContext* context);
     void UpdateWaves(CMPUT350::GameContext* context);
     void UpdatePlaying(CMPUT350::GameContext* context);
@@ -85,7 +85,7 @@ private:
     bool PlayerAlive() const;
     bool AllEnemiesInFormation(CMPUT350::GameContext* context) const;
     void OrderAttack(CMPUT350::GameContext* context);
-    void HandlePlayerDied(CMPUT350::GameContext* context);
+    void HandlePlayerDied();
     void KillEnemiesAndBullets(CMPUT350::GameContext* context);
     void AddPoints(int points);
 
