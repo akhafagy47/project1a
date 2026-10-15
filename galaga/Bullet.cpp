@@ -6,18 +6,17 @@ Bullet::Bullet(CMPUT350::Point2D location, CMPUT350::Vector2D heading, bool play
                std::weak_ptr<CMPUT350::GameObject> parent)
     : is_bullet_alive(true), shot_by_player(player), has_hit(false),
       current_bullet_loc(location), previous_bullet_loc(location), bullet_heading(heading),
-      hit_point(location), bullet_parent(parent), bullet_boundary(location.x, location.y, 2.0f, 2.0f), bullet_shapes()
+      bullet_boundary(location.x, location.y, 2.0f, 2.0f), hit_point(location), bullet_parent(parent), bullet_shapes()
 {
     UpdateCollisionData();
 }
 
 bool Bullet::IsPlayerBullet()
 {
-    // TODO: Update
     return shot_by_player;
 }
 
-void Bullet::Initialize(CMPUT350::GameContext* context)
+void Bullet::Initialize(CMPUT350::GameContext*)
 {
 }
 
@@ -50,11 +49,11 @@ void Bullet::Update(CMPUT350::GameContext* context)
     UpdateCollisionData();
 }
 
-void Bullet::LateUpdate(CMPUT350::GameContext* context)
+void Bullet::LateUpdate(CMPUT350::GameContext*)
 {
 }
 
-void Bullet::RenderBackground(CMPUT350::GameContext* context)
+void Bullet::RenderBackground(CMPUT350::GameContext*)
 {
 }
 
@@ -122,14 +121,11 @@ void Bullet::Kill()
 
 bool Bullet::IsAlive() const
 {
-    // TODO: Update code
-    
     return is_bullet_alive;
 }
 
 const CMPUT350::Rect& Bullet::GetBounds()
 {
-    // TODO: Update code
     return bullet_boundary;
 }
 CMPUT350::Point2D Bullet::GetLocation() const { return current_bullet_loc; }
