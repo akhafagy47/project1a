@@ -74,6 +74,7 @@ private:
     void SpawnEnemy(int index, CMPUT350::GameContext* context);
     std::vector<CMPUT350::Point2D> EntryPath(int wave, CMPUT350::Point2D slot) const;
     bool PlayerAlive() const;
+    bool AllEnemiesOnScreen(CMPUT350::GameContext* context) const;
     bool AllEnemiesInFormation(CMPUT350::GameContext* context) const;
     int AttackInterval() const;
     void OrderAttack(CMPUT350::GameContext* context);

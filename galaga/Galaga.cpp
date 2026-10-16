@@ -31,7 +31,6 @@ const int kFirstAttackInterval = 60;  // Frames between attack orders on stage 1
 const int kMinAttackInterval = 20;
 const int kAttackIntervalStep = 10;  // Each stage attacks this many frames sooner
 const int kAttackStride = 7;  // Picks the (attackNumber * 7)th enemy, spreading attackers out
-const int kWavesAttackStart = 2 * kWaveInterval;  // Attacks begin once the third wave starts
 const int kWavesAttackSlowdown = 2;  // While waves enter, attacks come this many times less often
 
 const float kPlayerBottomMargin = 124.0f;  // Player's distance from the bottom of the screen
@@ -247,9 +246,9 @@ void Galaga::UpdateStartup(CMPUT350::GameContext* context) {
 }
 
 /**
- * @brief Spawns the enemies on their schedule and, once the third wave starts, sends enemies
- * that have reached the formation to attack (less often than in Playing). Starts play once all
- * enemies have been spawned and are in formation.
+ * @brief Spawns the enemies on their schedule. Once every enemy has been spawned and is on the
+ * screen, sends enemies that have reached the formation to attack (less often than in Playing).
+ * Starts play once all enemies are in formation.
  */
 void Galaga::UpdateWaves(CMPUT350::GameContext* context) {
     // Ship i of wave w enters w * kWaveInterval + i * kShipSpacing frames into the stage
@@ -262,8 +261,8 @@ void Galaga::UpdateWaves(CMPUT350::GameContext* context) {
         SpawnEnemy(mSpawned, context);
         mSpawned++;
     }
-    if (mWaveFrames >= kWavesAttackStart &&
-        mWaveFrames % (AttackInterval() * kWavesAttackSlowdown) == 0) {
+    if (mSpawned == kTotalEnemies && mWaveFrames % (AttackInterval() * kWavesAttackSlowdown) == 0 &&
+        AllEnemiesOnScreen(context)) {
         OrderAttack(context);
     }
     mWaveFrames++;
@@ -401,6 +400,26 @@ int Galaga::AttackInterval() const {
 bool Galaga::PlayerAlive() const {
     std::shared_ptr<Player> player = mPlayer.lock();
     return player != nullptr && player->IsAlive();
+}
+
+/**
+ * @brief Whether every spawned enemy that is still alive is inside the window. Enemies added this
+ * frame are not in the engine's list yet, so the number found must also match the number alive.
+ */
+bool Galaga::AllEnemiesOnScreen(CMPUT350::GameContext* context) const {
+    int found = 0;
+    for (const auto& object : *context->mEngineView) {
+        auto enemy = std::dynamic_pointer_cast<Enemy>(object);
+        if (enemy == nullptr || !enemy->IsAlive()) {
+            continue;
+        }
+        CMPUT350::Point2D location = enemy->GetLocation();
+        if (location.x < 0.0f || location.x > mWidth || location.y < 0.0f || location.y > mHeight) {
+            return false;
+        }
+        found++;
+    }
+    return found == mEnemiesAlive;
 }
 
 /**

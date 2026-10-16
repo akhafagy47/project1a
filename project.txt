@@ -101,8 +101,8 @@ Galaga state flow (Galaga.h/.cpp):
   Enemy1. Wave w takes slots w, w+5, w+10, ... (numbered row by row), so every wave includes all
   three enemy types. Even waves enter from the left and odd waves from the right, on a smooth
   two-segment Bezier path that swoops across the lower screen and rises into the slot from below.
-  Once the third wave starts, Galaga also begins sending enemies that have reached the formation
-  to attack, at half the normal rate.
+  Once all 40 enemies have been spawned and are on the screen, Galaga begins sending enemies that
+  have reached the formation to attack (at half the normal rate) while the rest finish entering.
 - Playing sends an enemy to attack at a regular interval. The interval starts at 2 seconds and
   gets shorter on later stages (minimum 2/3 of a second). The attacker is chosen
   deterministically through the engine iterator: the k-th live enemy, where
