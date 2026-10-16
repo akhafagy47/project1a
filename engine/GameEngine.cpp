@@ -1,11 +1,12 @@
 #include "GameEngine.h"
-#include <algorithm>
-#include <limits>
-#include <cmath>
 
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
+#include <limits>
 #include <utility>
 #include <vector>
+
 #include "CollisionObject.h"
 #include "GraphicsObject.h"
 
@@ -128,30 +129,19 @@ void GameEngine::AddPendingObjects() {
  * @brief Handles all queued SFML events: closes the window on a close event, handles the engine
  * debug keys, and sends notifications to notification manager.
  */
-void GameEngine::ProcessEvents(){
-    while (const std::optional event = mWindow->pollEvent())
-    {
-        if (event->is<sf::Event::Closed>())
-        {
+void GameEngine::ProcessEvents() {
+    while (const std::optional event = mWindow->pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
             mWindow->close();
-        }
-        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-        {
-            if (keyPressed->scancode == sf::Keyboard::Scancode::P)
-            {
+        } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
                 mPaused = !mPaused;
-            }
-            else if (keyPressed->scancode == sf::Keyboard::Scancode::N && mPaused)
-            {
+            } else if (keyPressed->scancode == sf::Keyboard::Scancode::N && mPaused) {
                 mStepFrame = true;
-            }
-            else
-            {
+            } else {
                 HandleKey(static_cast<int>(keyPressed->scancode), true);
             }
-        }
-        else if (const auto* released = event->getIf<sf::Event::KeyReleased>())
-        {
+        } else if (const auto* released = event->getIf<sf::Event::KeyReleased>()) {
             HandleKey(static_cast<int>(released->scancode), false);
         }
     }
@@ -170,8 +160,8 @@ void GameEngine::UpdateObjects() {
 /**
  * @brief Goes through all the game objects to check for collisions.
  *
- * It loops through every pair of objects exactly once. If both objects are alive 
- * and touching, it calls CollisionEnter() on both of them so they know they got hit. 
+ * It loops through every pair of objects exactly once. If both objects are alive
+ * and touching, it calls CollisionEnter() on both of them so they know they got hit.
  * If a line shape hits something, it also passes the exact point of impact.
  */
 void GameEngine::ProcessCollisions() {
@@ -190,7 +180,7 @@ void GameEngine::ProcessCollisions() {
             auto& objB = colliders[b];
 
             if (!objA->IsAlive()) {
-                break; 
+                break;
             }
             if (!objB->IsAlive()) {
                 continue;
@@ -221,7 +211,6 @@ void GameEngine::ProcessCollisions() {
         }
     }
 }
-
 
 /**
  * @brief Calls LateUpdate() on every game object.
@@ -267,30 +256,24 @@ void GameEngine::Render() {
     mWindow->display();
 }
 
-void GameEngine::InstallKeyDownNotification(int key, const std::string& notification)
-{
+void GameEngine::InstallKeyDownNotification(int key, const std::string& notification) {
     mKeyDownNotifications[key].push_back(notification);
 }
-void GameEngine::InstallKeyUpNotification(int key, const std::string& notification)
-{
+void GameEngine::InstallKeyUpNotification(int key, const std::string& notification) {
     mKeyUpNotifications[key].push_back(notification);
 }
 
-void GameEngine::HandleKey(int key, bool down)
-{
-    auto* key_map = &mKeyUpNotifications;
-    if (down)
-    {
-        key_map = &mKeyDownNotifications;
+void GameEngine::HandleKey(int key, bool down) {
+    auto* keyMap = &mKeyUpNotifications;
+    if (down) {
+        keyMap = &mKeyDownNotifications;
     }
-    auto found_entry = key_map->find(key);
+    auto foundEntry = keyMap->find(key);
 
-    if (found_entry == key_map->end())
-    {
+    if (foundEntry == keyMap->end()) {
         return;
     }
-    for (const std::string& notification : found_entry->second)
-    {
+    for (const std::string& notification : foundEntry->second) {
         mNotificationManager.Notify(notification);
     }
 }
@@ -300,37 +283,36 @@ EngineView::const_iterator GameEngine::cend() const { return mGameObjects.cend()
 EngineView::const_iterator GameEngine::begin() const { return mGameObjects.begin(); }
 EngineView::const_iterator GameEngine::end() const { return mGameObjects.end(); }
 
-
-void GameEngine::SetupTransform(const GraphicsObject &obj) {
+void GameEngine::SetupTransform(const GraphicsObject& obj) {
     mContext.ScreenContext->SetContextRotation(obj.GetRotation());
     mContext.ScreenContext->SetContextOffset(obj.GetLocation());
 }
 
-Rect GameEngine::GetWorldBounds(CollisionObject &obj) {
+Rect GameEngine::GetWorldBounds(CollisionObject& obj) {
     SetupTransform(obj);
     return mContext.ScreenContext->Transform(obj.GetBounds());
 }
 
-std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject &obj) {
+std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject& obj) {
     SetupTransform(obj);
     std::vector<Shape> worldTransformedShape;
     const std::vector<Shape>& localSpaceShapes = obj.GetShapes();
-    
-    //objects without shape can still be hit as they are treated as rectangles covering bounds
+
+    // objects without shape can still be hit as they are treated as rectangles covering bounds
     if (localSpaceShapes.empty()) {
         worldTransformedShape.push_back(Shape(mContext.ScreenContext->Transform(obj.GetBounds())));
         return worldTransformedShape;
     }
     for (const Shape& currentShape : localSpaceShapes) {
         if (currentShape.t == ShapeType::kCircle) {
-            Point2D interimCenter = mContext.ScreenContext->Transform(currentShape.shape.circle.center);
-            worldTransformedShape.push_back(Shape(Circle(interimCenter, currentShape.shape.circle.radius)));
-        } 
-        else if (currentShape.t == ShapeType::kRect) {
+            Point2D interimCenter =
+                mContext.ScreenContext->Transform(currentShape.shape.circle.center);
+            worldTransformedShape.push_back(
+                Shape(Circle(interimCenter, currentShape.shape.circle.radius)));
+        } else if (currentShape.t == ShapeType::kRect) {
             Rect interimRect = mContext.ScreenContext->Transform(currentShape.shape.rect);
             worldTransformedShape.push_back(Shape(interimRect));
-        }
-        else if (currentShape.t == ShapeType::kLine) {
+        } else if (currentShape.t == ShapeType::kLine) {
             Point2D interimP1 = mContext.ScreenContext->Transform(currentShape.shape.line.p1);
             Point2D interimP2 = mContext.ScreenContext->Transform(currentShape.shape.line.p2);
             worldTransformedShape.push_back(Shape(Line(interimP1, interimP2)));
@@ -340,7 +322,7 @@ std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject &obj) {
 }
 
 bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& point) {
-    Point2D lineDirection = line.p2 - line.p1;
+    Vector2D lineDirection = line.p2 - line.p1;
 
     if (other.t == ShapeType::kLine) {
         return line.Crosses(other.shape.line, point);
@@ -348,9 +330,10 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
 
     if (other.t == ShapeType::kCircle) {
         const Circle& targetCircle = other.shape.circle;
-        Point2D offsetFromCenter = line.p1 - targetCircle.center;
+        Vector2D offsetFromCenter = line.p1 - targetCircle.center;
 
-        float quadC = offsetFromCenter.Dot(offsetFromCenter) - targetCircle.radius*targetCircle.radius;
+        float quadC =
+            offsetFromCenter.Dot(offsetFromCenter) - targetCircle.radius * targetCircle.radius;
         if (quadC <= 0.0f) {
             point = line.p1;
             return true;
@@ -358,36 +341,36 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
 
         float quadA = lineDirection.Dot(lineDirection);
         if (quadA == 0.0f) {
-            return false; 
-        }
-        
-        float quadB = 2.0f*offsetFromCenter.Dot(lineDirection);
-        float discriminant = quadB*quadB - 4.0f*quadA*quadC;
-        
-        if (discriminant < 0.0f) {
-            return false; 
+            return false;
         }
 
-        float entryTime = (-quadB - std::sqrt(discriminant))/(2.0f*quadA); 
-        if (entryTime < 0.0f || entryTime > 1.0f) {
-            return false; 
+        float quadB = 2.0f * offsetFromCenter.Dot(lineDirection);
+        float discriminant = quadB * quadB - 4.0f * quadA * quadC;
+
+        if (discriminant < 0.0f) {
+            return false;
         }
-        
-        point = line.p1 + (entryTime*lineDirection);
+
+        float entryTime = (-quadB - std::sqrt(discriminant)) / (2.0f * quadA);
+        if (entryTime < 0.0f || entryTime > 1.0f) {
+            return false;
+        }
+
+        point = line.p1 + (entryTime * lineDirection);
         return true;
     }
 
     if (other.t == ShapeType::kRect) {
         const Rect& targetRect = other.shape.rect;
-        
+
         float minX = targetRect.topLeft.x;
         float minY = targetRect.topLeft.y;
         float maxX = targetRect.topLeft.x + targetRect.width;
         float maxY = targetRect.topLeft.y + targetRect.height;
-        
+
         float startX = line.p1.x;
         float startY = line.p1.y;
-        
+
         float deltaX = lineDirection.x;
         float deltaY = lineDirection.y;
         float timeToEnter = 0.0f;
@@ -398,15 +381,15 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
                 return false;
             }
         } else {
-            float timeOneX = (minX - startX)/deltaX;
-            float timeTwoX = (maxX - startX)/deltaX;
-            
+            float timeOneX = (minX - startX) / deltaX;
+            float timeTwoX = (maxX - startX) / deltaX;
+
             if (timeOneX > timeTwoX) {
                 float temp = timeOneX;
                 timeOneX = timeTwoX;
                 timeTwoX = temp;
             }
-            
+
             if (timeOneX > timeToEnter) {
                 timeToEnter = timeOneX;
             }
@@ -423,15 +406,15 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
                 return false;
             }
         } else {
-            float timeOneY = (minY - startY)/deltaY;
-            float timeTwoY = (maxY - startY)/deltaY;
-            
+            float timeOneY = (minY - startY) / deltaY;
+            float timeTwoY = (maxY - startY) / deltaY;
+
             if (timeOneY > timeTwoY) {
                 float temp = timeOneY;
                 timeOneY = timeTwoY;
                 timeTwoY = temp;
             }
-            
+
             if (timeOneY > timeToEnter) {
                 timeToEnter = timeOneY;
             }
@@ -443,8 +426,7 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
             }
         }
 
-
-        point = line.p1 + (timeToEnter*lineDirection);
+        point = line.p1 + (timeToEnter * lineDirection);
         return true;
     }
     return false;
@@ -453,7 +435,6 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
 bool GameEngine::ShapesOverlap(const Shape& shapeOne, const Shape& shapeTwo) {
     Point2D dummyContactPoint;
 
-    
     if (shapeOne.t == ShapeType::kLine) {
         return FirstContact(shapeOne.shape.line, shapeTwo, dummyContactPoint);
     }
@@ -490,15 +471,15 @@ bool GameEngine::ShapesOverlap(const Shape& shapeOne, const Shape& shapeTwo) {
     float closestY = std::max(rectTopY, std::min(collisionCircle.center.y, rectBottomY));
 
     Point2D closestPointOnRect(closestX, closestY);
-    if (collisionCircle.center.Distance(closestPointOnRect) <= collisionCircle.radius){
+    if (collisionCircle.center.Distance(closestPointOnRect) <= collisionCircle.radius) {
         return true;
-    }
-    else{
+    } else {
         return false;
     }
 }
 
-bool GameEngine::ObjectsCollide(CollisionObject& a, CollisionObject& b, Point2D& pointA, bool& hasPointA, Point2D& pointB, bool& hasPointB) {
+bool GameEngine::ObjectsCollide(CollisionObject& a, CollisionObject& b, Point2D& pointA,
+                                bool& hasPointA, Point2D& pointB, bool& hasPointB) {
     hasPointA = false;
     hasPointB = false;
 
@@ -511,35 +492,37 @@ bool GameEngine::ObjectsCollide(CollisionObject& a, CollisionObject& b, Point2D&
     float shortestDistB = std::numeric_limits<float>::max();
     float shortestDistA = std::numeric_limits<float>::max();
     bool hasCollision = false;
-    
+
     std::vector<Shape> shapesA = GetWorldShapes(a);
     std::vector<Shape> shapesB = GetWorldShapes(b);
     for (const Shape& currentShapeA : shapesA) {
         for (const Shape& currentShapeB : shapesB) {
-            
             Point2D currentContactPoint;
-            
-            if (currentShapeA.t == ShapeType::kLine && FirstContact(currentShapeA.shape.line, currentShapeB, currentContactPoint)) {
+
+            if (currentShapeA.t == ShapeType::kLine &&
+                FirstContact(currentShapeA.shape.line, currentShapeB, currentContactPoint)) {
                 hasCollision = true;
                 float currentDistance = currentShapeA.shape.line.p1.Distance(currentContactPoint);
                 if (currentDistance < shortestDistA) {
                     shortestDistA = currentDistance;
-                    worldPointA =currentContactPoint;
+                    worldPointA = currentContactPoint;
                     hasPointA = true;
                 }
             }
 
-            if (currentShapeB.t == ShapeType::kLine && FirstContact(currentShapeB.shape.line, currentShapeA, currentContactPoint)) {
+            if (currentShapeB.t == ShapeType::kLine &&
+                FirstContact(currentShapeB.shape.line, currentShapeA, currentContactPoint)) {
                 hasCollision = true;
                 float distance = currentShapeB.shape.line.p1.Distance(currentContactPoint);
-                if (distance <shortestDistB) {
-                    shortestDistB =distance;
+                if (distance < shortestDistB) {
+                    shortestDistB = distance;
                     worldPointB = currentContactPoint;
                     hasPointB = true;
                 }
             }
 
-            if (currentShapeA.t != ShapeType::kLine && currentShapeB.t != ShapeType::kLine && ShapesOverlap(currentShapeA, currentShapeB)) {
+            if (currentShapeA.t != ShapeType::kLine && currentShapeB.t != ShapeType::kLine &&
+                ShapesOverlap(currentShapeA, currentShapeB)) {
                 hasCollision = true;
             }
         }
@@ -555,6 +538,5 @@ bool GameEngine::ObjectsCollide(CollisionObject& a, CollisionObject& b, Point2D&
     }
     return hasCollision;
 }
-
 
 }  // namespace CMPUT350

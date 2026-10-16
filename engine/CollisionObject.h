@@ -1,7 +1,7 @@
 #ifndef COLLISION_OBJECT_H
 #define COLLISION_OBJECT_H
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "GraphicsObject.h"
 #include "MathUtil.h"
@@ -20,9 +20,9 @@ union ShapeUnion {
 };
 
 struct Shape {
-    Shape(const Line &l) : shape(l), t(ShapeType::kLine) {}
-    Shape(const Circle &c) : shape(c), t(ShapeType::kCircle) {}
-    Shape(const Rect &r) : shape(r), t(ShapeType::kRect) {}
+    Shape(const Line& l) : shape(l), t(ShapeType::kLine) {}
+    Shape(const Circle& c) : shape(c), t(ShapeType::kCircle) {}
+    Shape(const Rect& r) : shape(r), t(ShapeType::kRect) {}
     ShapeUnion shape;
     ShapeType t;
 };
@@ -39,19 +39,19 @@ public:
      * @brief Called when this object's bounds overlap another collision object's bounds.
      * @param obj The other object in the collision (never this object).
      */
-    virtual void CollisionEnter(const std::shared_ptr<CollisionObject> &obj) = 0;
+    virtual void CollisionEnter(const std::shared_ptr<CollisionObject>& obj) = 0;
 
-    virtual void CollisionEnter(const std::shared_ptr<CollisionObject> &obj, const Point2D &collisionPoint) { CollisionEnter(obj); }
-    virtual const std::vector<Shape> &GetShapes() = 0;
+    virtual void CollisionEnter(const std::shared_ptr<CollisionObject>& obj, const Point2D&) {
+        CollisionEnter(obj);
+    }
+    virtual const std::vector<Shape>& GetShapes() = 0;
 
     /**
      * @brief The object's current axis-aligned bounding box, in pixels.
      * @return Reference to the bounds. The engine copies it immediately, so it only needs to
      * stay valid until the next call to GetBounds().
      */
-    virtual const Rect &GetBounds() = 0;
-
-
+    virtual const Rect& GetBounds() = 0;
 };
 
 }  // namespace CMPUT350

@@ -8,14 +8,13 @@
 #include "Player.h"
 #include "Stars.h"
 
-namespace
-{
+namespace {
 const int kStartingLives = 3;
 const int kMaxCredits = 99;
 
-const int kStartupFrames = 90;   // How long "STAGE n" is shown
-const int kReadyFrames = 60;     // How long "READY" is shown before the player respawns
-const int kGameOverFrames = 150; // How long "GAME OVER" is shown
+const int kStartupFrames = 90;    // How long "STAGE n" is shown
+const int kReadyFrames = 60;      // How long "READY" is shown before the player respawns
+const int kGameOverFrames = 150;  // How long "GAME OVER" is shown
 
 const int kWaves = 5;
 const int kShipsPerWave = 8;
@@ -30,16 +29,16 @@ const float kFormationTop = 120.0f;
 
 const int kFirstAttackInterval = 60;  // Frames between attack orders on stage 1
 const int kMinAttackInterval = 20;
-const int kAttackIntervalStep = 10;   // Each stage attacks this many frames sooner
-const int kAttackStride = 7;          // Picks the (attackNumber * 7)th enemy, spreading attackers out
+const int kAttackIntervalStep = 10;  // Each stage attacks this many frames sooner
+const int kAttackStride = 7;  // Picks the (attackNumber * 7)th enemy, spreading attackers out
+const int kWavesAttackSlowdown = 2;  // While waves enter, attacks come this many times less often
 
 const float kPlayerBottomMargin = 124.0f;  // Player's distance from the bottom of the screen
 
 /**
  * @brief Points for destroying each type of enemy, in formation and out of formation.
  */
-struct EnemyPoints
-{
+struct EnemyPoints {
     const char* typeName;
     int inFormation;
     int outOfFormation;
@@ -60,30 +59,27 @@ const char* kKilledOutOfFormation = "KilledOutOfFormation";
 
 Galaga::Galaga(int width, int height) : mWidth(width), mHeight(height) {}
 
-void Galaga::Initialize(CMPUT350::GameContext* context)
-{
+void Galaga::Initialize(CMPUT350::GameContext* context) {
     CMPUT350::EngineView* engine = context->mEngineView;
     engine->InstallKeyDownNotification(CMPUT350::Key::Num5, kInsertCoin);
     engine->InstallKeyDownNotification(CMPUT350::Key::Num1, kStartGame);
-    for (unsigned int key : {CMPUT350::Key::A, CMPUT350::Key::Left})
-    {
-        engine->InstallKeyDownNotification(key, Player::shift_left_key);
-        engine->InstallKeyUpNotification(key, Player::stop_left_key);
+    for (unsigned int key : {CMPUT350::Key::A, CMPUT350::Key::Left}) {
+        engine->InstallKeyDownNotification(key, Player::kShiftLeftKey);
+        engine->InstallKeyUpNotification(key, Player::kStopLeftKey);
     }
-    for (unsigned int key : {CMPUT350::Key::D, CMPUT350::Key::Right})
-    {
-        engine->InstallKeyDownNotification(key, Player::shift_right_key);
-        engine->InstallKeyUpNotification(key, Player::stop_right_key);
+    for (unsigned int key : {CMPUT350::Key::D, CMPUT350::Key::Right}) {
+        engine->InstallKeyDownNotification(key, Player::kShiftRightKey);
+        engine->InstallKeyUpNotification(key, Player::kStopRightKey);
     }
-    engine->InstallKeyDownNotification(CMPUT350::Key::Space, Player::fire_key);
+    engine->InstallKeyDownNotification(CMPUT350::Key::Space, Player::kFireKey);
 
     CMPUT350::NotificationManager* notifications = context->mNotificationManager;
     notifications->Register(context->CurrObject, kInsertCoin);
     notifications->Register(context->CurrObject, kStartGame);
     notifications->Register(context->CurrObject, kPlayerDied);
-    for (const EnemyPoints& enemy : kEnemyPoints)
-    {
-        notifications->Register(context->CurrObject, std::string(enemy.typeName) + kKilledInFormation);
+    for (const EnemyPoints& enemy : kEnemyPoints) {
+        notifications->Register(context->CurrObject,
+                                std::string(enemy.typeName) + kKilledInFormation);
         notifications->Register(context->CurrObject,
                                 std::string(enemy.typeName) + kKilledOutOfFormation);
     }
@@ -91,13 +87,10 @@ void Galaga::Initialize(CMPUT350::GameContext* context)
     engine->AddGameObject(std::make_shared<Stars>(250, CMPUT350::Rect(0, 0, mWidth, mHeight)));
 }
 
-void Galaga::Update(CMPUT350::GameContext* context)
-{
-    if (mStartRequested)
-    {
+void Galaga::Update(CMPUT350::GameContext* context) {
+    if (mStartRequested) {
         mStartRequested = false;
-        if (mState == State::WaitingForCoin && mCredits > 0)
-        {
+        if (mState == State::WaitingForCoin && mCredits > 0) {
             mCredits--;
             mScore = 0;
             mLives = kStartingLives;
@@ -110,51 +103,48 @@ void Galaga::Update(CMPUT350::GameContext* context)
 
     // The player can be hit in any state where it is on screen
     bool inPlay = mState == State::Startup || mState == State::Waves || mState == State::Playing;
-    if (inPlay && mHasPlayer && (mPlayerDied || !PlayerAlive()))
-    {
+    if (inPlay && mHasPlayer && (mPlayerDied || !PlayerAlive())) {
         HandlePlayerDied();
     }
 
-    switch (mState)
-    {
-    case State::WaitingForCoin:
-        break;
-    case State::Startup:
-        UpdateStartup(context);
-        break;
-    case State::Waves:
-        UpdateWaves(context);
-        break;
-    case State::Playing:
-        UpdatePlaying(context);
-        break;
-    case State::PlayerDown:
-        UpdatePlayerDown(context);
-        break;
-    case State::GameOver:
-        UpdateGameOver(context);
-        break;
+    switch (mState) {
+        case State::WaitingForCoin:
+            break;
+        case State::Startup:
+            UpdateStartup(context);
+            break;
+        case State::Waves:
+            UpdateWaves(context);
+            break;
+        case State::Playing:
+            UpdatePlaying(context);
+            break;
+        case State::PlayerDown:
+            UpdatePlayerDown(context);
+            break;
+        case State::GameOver:
+            UpdateGameOver(context);
+            break;
     }
     mStateFrames++;
 }
 
-void Galaga::RenderUI(CMPUT350::GameContext* context)
-{
+void Galaga::RenderUI(CMPUT350::GameContext* context) {
     CMPUT350::DrawContext* gui = context->GUIContext;
     float centerX = mWidth / 2.0f;
     CMPUT350::Point2D center(centerX, mHeight / 2.0f);
 
-    gui->DrawCenteredText("HIGH SCORE", 24, CMPUT350::Point2D(centerX, 20.0f), CMPUT350::Colors::red);
+    gui->DrawCenteredText("HIGH SCORE", 24, CMPUT350::Point2D(centerX, 20.0f),
+                          CMPUT350::Colors::red);
     gui->DrawCenteredText(std::to_string(mHighScore), 24, CMPUT350::Point2D(centerX, 48.0f),
                           CMPUT350::Colors::white);
 
-    if (mState == State::WaitingForCoin)
-    {
-        gui->DrawCenteredText("GALAGA", 72, CMPUT350::Point2D(centerX, 300.0f), CMPUT350::Colors::cyan);
+    if (mState == State::WaitingForCoin) {
+        gui->DrawCenteredText("GALAGA", 72, CMPUT350::Point2D(centerX, 300.0f),
+                              CMPUT350::Colors::cyan);
         gui->DrawCenteredText("PRESS 5 TO INSERT COIN", 28, center, CMPUT350::Colors::white);
-        if (mCredits > 0)
-        {
-            gui->DrawCenteredText("PRESS 1 TO START", 28, center + CMPUT350::Point2D(0.0f, 50.0f),
+        if (mCredits > 0) {
+            gui->DrawCenteredText("PRESS 1 TO START", 28, center + CMPUT350::Vector2D(0.0f, 50.0f),
                                   CMPUT350::Colors::yellow);
         }
         gui->DrawText("CREDITS " + std::to_string(mCredits), 24,
@@ -164,56 +154,51 @@ void Galaga::RenderUI(CMPUT350::GameContext* context)
 
     // In a game: score, lives and stage are always shown
     gui->DrawText("1UP", 24, CMPUT350::Point2D(20.0f, 8.0f), CMPUT350::Colors::red);
-    gui->DrawText(std::to_string(mScore), 24, CMPUT350::Point2D(20.0f, 36.0f), CMPUT350::Colors::white);
+    gui->DrawText(std::to_string(mScore), 24, CMPUT350::Point2D(20.0f, 36.0f),
+                  CMPUT350::Colors::white);
     gui->DrawText("LIVES " + std::to_string(mLives), 24, CMPUT350::Point2D(20.0f, mHeight - 40.0f),
                   CMPUT350::Colors::white);
     gui->DrawText("STAGE " + std::to_string(mStage), 24,
                   CMPUT350::Point2D(mWidth - 150.0f, mHeight - 40.0f), CMPUT350::Colors::white);
 
-    switch (mState)
-    {
-    case State::Startup:
-        gui->DrawCenteredText("STAGE " + std::to_string(mStage), 36, center, CMPUT350::Colors::cyan);
-        break;
-    case State::PlayerDown:
-        if (mReadyFrames >= 0)
-        {
-            gui->DrawCenteredText("READY", 36, center, CMPUT350::Colors::red);
-            gui->DrawCenteredText("LIVES " + std::to_string(mLives), 28,
-                                  center + CMPUT350::Point2D(0.0f, 50.0f), CMPUT350::Colors::white);
-        }
-        break;
-    case State::GameOver:
-        gui->DrawCenteredText("GAME OVER", 48, center, CMPUT350::Colors::red);
-        break;
-    default:
-        break;
+    switch (mState) {
+        case State::Startup:
+            gui->DrawCenteredText("STAGE " + std::to_string(mStage), 36, center,
+                                  CMPUT350::Colors::cyan);
+            break;
+        case State::PlayerDown:
+            if (mReadyFrames >= 0) {
+                gui->DrawCenteredText("READY", 36, center, CMPUT350::Colors::red);
+                gui->DrawCenteredText("LIVES " + std::to_string(mLives), 28,
+                                      center + CMPUT350::Vector2D(0.0f, 50.0f),
+                                      CMPUT350::Colors::white);
+            }
+            break;
+        case State::GameOver:
+            gui->DrawCenteredText("GAME OVER", 48, center, CMPUT350::Colors::red);
+            break;
+        default:
+            break;
     }
 }
 
-void Galaga::ReceiveNotification(const std::string& key)
-{
-    if (key == kInsertCoin)
-    {
+void Galaga::ReceiveNotification(const std::string& key) {
+    if (key == kInsertCoin) {
         mCredits = std::min(mCredits + 1, kMaxCredits);
         return;
     }
-    if (key == kStartGame)
-    {
+    if (key == kStartGame) {
         mStartRequested = true;
         return;
     }
-    if (key == kPlayerDied)
-    {
+    if (key == kPlayerDied) {
         mPlayerDied = true;
         return;
     }
 
-    for (const EnemyPoints& enemy : kEnemyPoints)
-    {
+    for (const EnemyPoints& enemy : kEnemyPoints) {
         std::string typeName = enemy.typeName;
-        if (key == typeName + kKilledInFormation || key == typeName + kKilledOutOfFormation)
-        {
+        if (key == typeName + kKilledInFormation || key == typeName + kKilledOutOfFormation) {
             bool inFormation = key == typeName + kKilledInFormation;
             AddPoints(inFormation ? enemy.inFormation : enemy.outOfFormation);
             mEnemiesAlive = std::max(mEnemiesAlive - 1, 0);
@@ -225,25 +210,23 @@ void Galaga::ReceiveNotification(const std::string& key)
 /**
  * @brief Switches state, restarting the state's frame counter.
  */
-void Galaga::ChangeState(State next)
-{
-    switch (next)
-    {
-    case State::Startup:
-        // A new stage: the formation is rebuilt from scratch
-        mSpawned = 0;
-        mWaveFrames = 0;
-        mEnemiesAlive = 0;
-        mAttackNumber = 0;
-        break;
-    case State::PlayerDown:
-        mReadyFrames = -1;
-        break;
-    case State::GameOver:
-        mHighScore = std::max(mHighScore, mScore);
-        break;
-    default:
-        break;
+void Galaga::ChangeState(State next) {
+    switch (next) {
+        case State::Startup:
+            // A new stage: the formation is rebuilt from scratch
+            mSpawned = 0;
+            mWaveFrames = 0;
+            mEnemiesAlive = 0;
+            mAttackNumber = 0;
+            break;
+        case State::PlayerDown:
+            mReadyFrames = -1;
+            break;
+        case State::GameOver:
+            mHighScore = std::max(mHighScore, mScore);
+            break;
+        default:
+            break;
     }
 
     mState = next;
@@ -253,40 +236,38 @@ void Galaga::ChangeState(State next)
 /**
  * @brief Shows the stage number, brings in the player if there isn't one, then starts the waves.
  */
-void Galaga::UpdateStartup(CMPUT350::GameContext* context)
-{
-    if (!mHasPlayer)
-    {
+void Galaga::UpdateStartup(CMPUT350::GameContext* context) {
+    if (!mHasPlayer) {
         SpawnPlayer(context);
     }
-    if (mStateFrames >= kStartupFrames)
-    {
+    if (mStateFrames >= kStartupFrames) {
         ChangeState(State::Waves);
     }
 }
 
 /**
- * @brief Spawns the enemies on their schedule, then starts play once all of them have reached
- * the formation.
+ * @brief Spawns the enemies on their schedule. Once every enemy has been spawned and is on the
+ * screen, sends enemies that have reached the formation to attack (less often than in Playing).
+ * Starts play once all enemies are in formation.
  */
-void Galaga::UpdateWaves(CMPUT350::GameContext* context)
-{
+void Galaga::UpdateWaves(CMPUT350::GameContext* context) {
     // Ship i of wave w enters w * kWaveInterval + i * kShipSpacing frames into the stage
-    while (mSpawned < kTotalEnemies)
-    {
+    while (mSpawned < kTotalEnemies) {
         int wave = mSpawned / kShipsPerWave;
         int ship = mSpawned % kShipsPerWave;
-        if (wave * kWaveInterval + ship * kShipSpacing > mWaveFrames)
-        {
+        if (wave * kWaveInterval + ship * kShipSpacing > mWaveFrames) {
             break;
         }
         SpawnEnemy(mSpawned, context);
         mSpawned++;
     }
+    if (mSpawned == kTotalEnemies && mWaveFrames % (AttackInterval() * kWavesAttackSlowdown) == 0 &&
+        AllEnemiesOnScreen(context)) {
+        OrderAttack(context);
+    }
     mWaveFrames++;
 
-    if (mSpawned == kTotalEnemies && AllEnemiesInFormation(context))
-    {
+    if (mSpawned == kTotalEnemies && AllEnemiesInFormation(context)) {
         ChangeState(State::Playing);
     }
 }
@@ -295,19 +276,14 @@ void Galaga::UpdateWaves(CMPUT350::GameContext* context)
  * @brief Orders attacks at a regular interval and moves to the next stage once every enemy has
  * been destroyed.
  */
-void Galaga::UpdatePlaying(CMPUT350::GameContext* context)
-{
-    if (mEnemiesAlive == 0)
-    {
+void Galaga::UpdatePlaying(CMPUT350::GameContext* context) {
+    if (mEnemiesAlive == 0) {
         mStage++;
         ChangeState(State::Startup);
         return;
     }
 
-    int interval = std::max(kMinAttackInterval,
-                            kFirstAttackInterval - kAttackIntervalStep * (mStage - 1));
-    if (mStateFrames > 0 && mStateFrames % interval == 0)
-    {
+    if (mStateFrames > 0 && mStateFrames % AttackInterval() == 0) {
         OrderAttack(context);
     }
 }
@@ -316,25 +292,20 @@ void Galaga::UpdatePlaying(CMPUT350::GameContext* context)
  * @brief Waits for every enemy to return to formation, shows "READY" and the lives left, then
  * respawns the player and continues from where the game was.
  */
-void Galaga::UpdatePlayerDown(CMPUT350::GameContext* context)
-{
-    if (mReadyFrames < 0)
-    {
-        if (AllEnemiesInFormation(context))
-        {
+void Galaga::UpdatePlayerDown(CMPUT350::GameContext* context) {
+    if (mReadyFrames < 0) {
+        if (AllEnemiesInFormation(context)) {
             mReadyFrames = 0;
         }
         return;
     }
 
     mReadyFrames++;
-    if (mReadyFrames < kReadyFrames)
-    {
+    if (mReadyFrames < kReadyFrames) {
         return;
     }
 
-    if (mResumeState != State::Startup)
-    {
+    if (mResumeState != State::Startup) {
         SpawnPlayer(context);  // Startup spawns the player itself
     }
     ChangeState(mResumeState);
@@ -343,10 +314,8 @@ void Galaga::UpdatePlayerDown(CMPUT350::GameContext* context)
 /**
  * @brief Shows "GAME OVER", then clears the screen and waits for the next game.
  */
-void Galaga::UpdateGameOver(CMPUT350::GameContext* context)
-{
-    if (mStateFrames >= kGameOverFrames)
-    {
+void Galaga::UpdateGameOver(CMPUT350::GameContext* context) {
+    if (mStateFrames >= kGameOverFrames) {
         KillEnemiesAndBullets(context);
         ChangeState(State::WaitingForCoin);
     }
@@ -355,10 +324,9 @@ void Galaga::UpdateGameOver(CMPUT350::GameContext* context)
 /**
  * @brief Adds a new player at the bottom center of the screen.
  */
-void Galaga::SpawnPlayer(CMPUT350::GameContext* context)
-{
-    auto player = std::make_shared<Player>(
-        CMPUT350::Point2D(mWidth / 2.0f, mHeight - kPlayerBottomMargin));
+void Galaga::SpawnPlayer(CMPUT350::GameContext* context) {
+    auto player =
+        std::make_shared<Player>(CMPUT350::Point2D(mWidth / 2.0f, mHeight - kPlayerBottomMargin));
     mPlayer = player;
     mHasPlayer = true;
     mPlayerDied = false;
@@ -372,29 +340,24 @@ void Galaga::SpawnPlayer(CMPUT350::GameContext* context)
  * every wave fills parts of all five rows and brings in all three enemy types. Row 0 holds
  * Enemy3, rows 1-2 Enemy2 and rows 3-4 Enemy1.
  */
-void Galaga::SpawnEnemy(int index, CMPUT350::GameContext* context)
-{
+void Galaga::SpawnEnemy(int index, CMPUT350::GameContext* context) {
     int wave = index / kShipsPerWave;
     int ship = index % kShipsPerWave;
     int slot = ship * kWaves + wave;
     int row = slot / kFormationColumns;
     int column = slot % kFormationColumns;
 
-    CMPUT350::Point2D home(mWidth / 2.0f + (column - (kFormationColumns - 1) / 2.0f) * kColumnSpacing,
-                           kFormationTop + row * kRowSpacing);
+    CMPUT350::Point2D home(
+        mWidth / 2.0f + (column - (kFormationColumns - 1) / 2.0f) * kColumnSpacing,
+        kFormationTop + row * kRowSpacing);
     std::vector<CMPUT350::Point2D> path = EntryPath(wave, home);
 
     std::shared_ptr<Enemy> enemy;
-    if (row == 0)
-    {
+    if (row == 0) {
         enemy = std::make_shared<Enemy3>(home, path);
-    }
-    else if (row < 3)
-    {
+    } else if (row < 3) {
         enemy = std::make_shared<Enemy2>(home, path);
-    }
-    else
-    {
+    } else {
         enemy = std::make_shared<Enemy1>(home, path);
     }
     context->mEngineView->AddGameObject(enemy);
@@ -408,43 +371,69 @@ void Galaga::SpawnEnemy(int index, CMPUT350::GameContext* context)
  * from the side, swoops down across the lower screen, then rises into its slot from below. The
  * middle control points are collinear so the two segments join smoothly.
  */
-std::vector<CMPUT350::Point2D> Galaga::EntryPath(int wave, CMPUT350::Point2D slot) const
-{
+std::vector<CMPUT350::Point2D> Galaga::EntryPath(int wave, CMPUT350::Point2D slot) const {
     bool fromLeft = wave % 2 == 0;
     float width = static_cast<float>(mWidth);
-    auto side = [fromLeft, width](float x, float y)
-    { return CMPUT350::Point2D(fromLeft ? x : width - x, y); };
+    auto side = [fromLeft, width](float x, float y) {
+        return CMPUT350::Point2D(fromLeft ? x : width - x, y);
+    };
 
-    return {side(-40.0f, 260.0f),  side(240.0f, 260.0f), side(120.0f, 680.0f),
-            side(330.0f, 680.0f),  side(480.0f, 680.0f), slot + CMPUT350::Point2D(0.0f, 260.0f),
+    return {side(-40.0f, 260.0f),
+            side(240.0f, 260.0f),
+            side(120.0f, 680.0f),
+            side(330.0f, 680.0f),
+            side(480.0f, 680.0f),
+            slot + CMPUT350::Vector2D(0.0f, 260.0f),
             slot};
+}
+
+/**
+ * @brief Frames between attack orders in Playing; later stages attack more often.
+ */
+int Galaga::AttackInterval() const {
+    return std::max(kMinAttackInterval, kFirstAttackInterval - kAttackIntervalStep * (mStage - 1));
 }
 
 /**
  * @brief Whether the current player is still alive.
  */
-bool Galaga::PlayerAlive() const
-{
+bool Galaga::PlayerAlive() const {
     std::shared_ptr<Player> player = mPlayer.lock();
     return player != nullptr && player->IsAlive();
+}
+
+/**
+ * @brief Whether every spawned enemy that is still alive is inside the window. Enemies added this
+ * frame are not in the engine's list yet, so the number found must also match the number alive.
+ */
+bool Galaga::AllEnemiesOnScreen(CMPUT350::GameContext* context) const {
+    int found = 0;
+    for (const auto& object : *context->mEngineView) {
+        auto enemy = std::dynamic_pointer_cast<Enemy>(object);
+        if (enemy == nullptr || !enemy->IsAlive()) {
+            continue;
+        }
+        CMPUT350::Point2D location = enemy->GetLocation();
+        if (location.x < 0.0f || location.x > mWidth || location.y < 0.0f || location.y > mHeight) {
+            return false;
+        }
+        found++;
+    }
+    return found == mEnemiesAlive;
 }
 
 /**
  * @brief Whether every live enemy is in its formation slot. Enemies added this frame are not in
  * the engine's list yet, so the number found must also match the number spawned and alive.
  */
-bool Galaga::AllEnemiesInFormation(CMPUT350::GameContext* context) const
-{
+bool Galaga::AllEnemiesInFormation(CMPUT350::GameContext* context) const {
     int found = 0;
-    for (const auto& object : *context->mEngineView)
-    {
+    for (const auto& object : *context->mEngineView) {
         auto enemy = std::dynamic_pointer_cast<Enemy>(object);
-        if (enemy == nullptr || !enemy->IsAlive())
-        {
+        if (enemy == nullptr || !enemy->IsAlive()) {
             continue;
         }
-        if (!enemy->IsInFormation())
-        {
+        if (!enemy->IsInFormation()) {
             return false;
         }
         found++;
@@ -457,25 +446,20 @@ bool Galaga::AllEnemiesInFormation(CMPUT350::GameContext* context) const
  * is chosen with k = (attackNumber * 7) mod count, so consecutive attackers are spread across
  * the formation. An enemy that is not in formation declines and this turn is skipped.
  */
-void Galaga::OrderAttack(CMPUT350::GameContext* context)
-{
+void Galaga::OrderAttack(CMPUT350::GameContext* context) {
     std::shared_ptr<Player> player = mPlayer.lock();
-    if (player == nullptr || !player->IsAlive())
-    {
+    if (player == nullptr || !player->IsAlive()) {
         return;
     }
 
     std::vector<std::shared_ptr<Enemy>> enemies;
-    for (const auto& object : *context->mEngineView)
-    {
+    for (const auto& object : *context->mEngineView) {
         auto enemy = std::dynamic_pointer_cast<Enemy>(object);
-        if (enemy != nullptr && enemy->IsAlive())
-        {
+        if (enemy != nullptr && enemy->IsAlive()) {
             enemies.push_back(enemy);
         }
     }
-    if (enemies.empty())
-    {
+    if (enemies.empty()) {
         return;
     }
 
@@ -488,13 +472,11 @@ void Galaga::OrderAttack(CMPUT350::GameContext* context)
  * @brief Takes a life and waits for the formation before respawning, or ends the game if no
  * lives are left.
  */
-void Galaga::HandlePlayerDied()
-{
+void Galaga::HandlePlayerDied() {
     mHasPlayer = false;
     mPlayerDied = false;
     mLives--;
-    if (mLives <= 0)
-    {
+    if (mLives <= 0) {
         mLives = 0;
         ChangeState(State::GameOver);
         return;
@@ -508,13 +490,10 @@ void Galaga::HandlePlayerDied()
 /**
  * @brief Removes every enemy and bullet so the next game starts from an empty screen.
  */
-void Galaga::KillEnemiesAndBullets(CMPUT350::GameContext* context)
-{
-    for (const auto& object : *context->mEngineView)
-    {
+void Galaga::KillEnemiesAndBullets(CMPUT350::GameContext* context) {
+    for (const auto& object : *context->mEngineView) {
         if (std::dynamic_pointer_cast<Enemy>(object) != nullptr ||
-            std::dynamic_pointer_cast<Bullet>(object) != nullptr)
-        {
+            std::dynamic_pointer_cast<Bullet>(object) != nullptr) {
             object->Kill();
         }
     }
@@ -524,8 +503,7 @@ void Galaga::KillEnemiesAndBullets(CMPUT350::GameContext* context)
 /**
  * @brief Adds to the score, raising the high score along with it.
  */
-void Galaga::AddPoints(int points)
-{
+void Galaga::AddPoints(int points) {
     mScore += points;
     mHighScore = std::max(mHighScore, mScore);
 }

@@ -24,8 +24,7 @@ class Player;
  * Galaga is not a graphics object; everything it shows is drawn in RenderUI() through the GUI
  * context, so nothing is offset or rotated.
  */
-class Galaga : public CMPUT350::GameObject
-{
+class Galaga : public CMPUT350::GameObject {
 public:
     /**
      * @brief Constructs the game manager.
@@ -62,15 +61,7 @@ public:
     void ReceiveNotification(const std::string& key) override;
 
 private:
-    enum class State
-    {
-        WaitingForCoin,
-        Startup,
-        Waves,
-        Playing,
-        PlayerDown,
-        GameOver
-    };
+    enum class State { WaitingForCoin, Startup, Waves, Playing, PlayerDown, GameOver };
 
     void ChangeState(State next);
     void UpdateStartup(CMPUT350::GameContext* context);
@@ -83,7 +74,9 @@ private:
     void SpawnEnemy(int index, CMPUT350::GameContext* context);
     std::vector<CMPUT350::Point2D> EntryPath(int wave, CMPUT350::Point2D slot) const;
     bool PlayerAlive() const;
+    bool AllEnemiesOnScreen(CMPUT350::GameContext* context) const;
     bool AllEnemiesInFormation(CMPUT350::GameContext* context) const;
+    int AttackInterval() const;
     void OrderAttack(CMPUT350::GameContext* context);
     void HandlePlayerDied();
     void KillEnemiesAndBullets(CMPUT350::GameContext* context);
@@ -110,7 +103,7 @@ private:
     bool mStartRequested = false;  // StartGame received
     bool mPlayerDied = false;      // PlayerDied received
 
-    bool mHasPlayer = false;  // A player has been spawned and has not died yet
+    bool mHasPlayer = false;              // A player has been spawned and has not died yet
     State mResumeState = State::Playing;  // Where to go after the player respawns
     int mReadyFrames = -1;  // Frames showing "READY", or -1 while waiting for the formation
 

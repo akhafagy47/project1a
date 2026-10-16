@@ -20,26 +20,26 @@ public:
      * @brief Called once, at the start of the frame in which the object enters the engine.
      * @param context Engine and drawing context for this frame.
      */
-    virtual void Initialize(GameContext *context);
+    virtual void Initialize(GameContext* context);
 
     /**
      * @brief Called once per frame, before collisions are processed.
      * @param context Engine and drawing context for this frame.
      */
-    virtual void Update(GameContext *context);
+    virtual void Update(GameContext* context);
 
     /**
      * @brief Called once per frame, after collisions are processed.
      * @param context Engine and drawing context for this frame.
      */
-    virtual void LateUpdate(GameContext *context);
+    virtual void LateUpdate(GameContext* context);
 
     /**
      * @brief Called once per frame after all background and foreground rendering, so UI is drawn
      * on top of everything else.
      * @param context Engine and drawing context for this frame.
      */
-    virtual void RenderUI(GameContext *context);
+    virtual void RenderUI(GameContext* context);
 
     /**
      * @brief Whether the object should stay in the engine.
@@ -52,7 +52,7 @@ public:
      */
     virtual void Kill();
 
-    virtual void ReceiveNotification(const std::string &key);
+    virtual void ReceiveNotification(const std::string& key);
 
 private:
     bool mAlive = true;

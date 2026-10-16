@@ -25,7 +25,7 @@ public:
      * @param object The object to notify. Only a weak reference is kept.
      * @param key The message the object wants to receive.
      */
-    void Register(std::weak_ptr<GameObject> object, const std::string &key);
+    void Register(std::weak_ptr<GameObject> object, const std::string& key);
 
     /**
      * @brief Stops an object from receiving a message. Also removes any listeners for that message
@@ -33,7 +33,7 @@ public:
      * @param object The object to remove. It may already be destroyed.
      * @param key The message the object should no longer receive.
      */
-    void Unregister(std::weak_ptr<GameObject> object, const std::string &key);
+    void Unregister(std::weak_ptr<GameObject> object, const std::string& key);
 
     /**
      * @brief Immediately calls ReceiveNotification(message) on every live object registered for
@@ -44,7 +44,7 @@ public:
      * delivery applies from the next Notify call onward.
      * @param message The message to send.
      */
-    void Notify(const std::string &message);
+    void Notify(const std::string& message);
 
 private:
     // Message -> objects registered for it. Weak pointers, so the manager never owns an object.
