@@ -1,8 +1,8 @@
 #ifndef GRAPHICS_OBJECT_H
 #define GRAPHICS_OBJECT_H
 
-#include "MathUtil.h"
 #include "GameObject.h"
+#include "MathUtil.h"
 
 namespace CMPUT350 {
 
@@ -20,16 +20,16 @@ public:
      * @brief Draws the parts of the object that should be behind all foreground drawing.
      * @param context Engine and drawing context for this frame.
      */
-    virtual void RenderBackground(GameContext *context);
+    virtual void RenderBackground(GameContext* context);
 
     /**
      * @brief Draws the parts of the object that should be in front of all background drawing.
      * @param context Engine and drawing context for this frame.
      */
-    virtual void RenderForeground(GameContext *context);
+    virtual void RenderForeground(GameContext* context);
 
     virtual Point2D GetLocation() const = 0;
-    
+
     virtual float GetRotation() const = 0;
 };
 

@@ -2,11 +2,11 @@
 #define RENDERTARGET_H
 
 #include <cstdint>
+#include <memory>
 #include <string>
+
 #include "MathUtil.h"
 #include <SFML/Graphics.hpp>
-#include <memory>
-
 
 namespace CMPUT350 {
 
@@ -43,7 +43,7 @@ public:
      * @param p The top-left 2D starting coordinate for the text.
      * @param c The color of the text.
      */
-    void DrawText(const std::string &text, int pixelSize, Point2D p, RGBColor c);
+    void DrawText(const std::string& text, int pixelSize, Point2D p, RGBColor c);
 
     /**
      * @brief Draws text centered at the specified point.
@@ -52,7 +52,7 @@ public:
      * @param p The center coordinate for the text.
      * @param c The color of the text.
      */
-    void DrawCenteredText(const std::string &text, int pixelSize, Point2D p, RGBColor c);
+    void DrawCenteredText(const std::string& text, int pixelSize, Point2D p, RGBColor c);
 
     /**
      * @brief Draws a filled circle.
@@ -90,7 +90,7 @@ public:
      * relative to the world offset and rendered onto the associated window.
      */
     void DrawLine(Point2D from, Point2D to, float width, RGBColor c);
-    
+
     /**
      * @brief Gets the width of the rendering window.
      * @return The window width in pixels.

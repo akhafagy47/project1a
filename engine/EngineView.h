@@ -26,8 +26,8 @@ public:
     virtual void AddGameObject(std::shared_ptr<GameObject> gameObject) = 0;
 
     using tGameObject = std::vector<std::shared_ptr<GameObject>>;
-    virtual void InstallKeyDownNotification(int key, const std::string &notification) = 0;
-    virtual void InstallKeyUpNotification(int key, const std::string &notification) = 0;
+    virtual void InstallKeyDownNotification(int key, const std::string& notification) = 0;
+    virtual void InstallKeyUpNotification(int key, const std::string& notification) = 0;
     using const_iterator = tGameObject::const_iterator;
     virtual const_iterator cbegin() const = 0;
     virtual const_iterator cend() const = 0;

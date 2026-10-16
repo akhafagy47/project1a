@@ -2,6 +2,7 @@
 #define GAMECONTEXT_H
 
 #include <memory>
+
 #include "DrawContext.h"
 #include "EngineView.h"
 #include "GameObject.h"
@@ -18,11 +19,11 @@ namespace CMPUT350 {
  */
 class GameContext {
 public:
-    EngineView *mEngineView = nullptr;     // Lets objects add new objects to the engine
-    DrawContext *ScreenContext = nullptr;  // Lets graphics objects draw to the screen
-    DrawContext *GUIContext = nullptr;
+    EngineView* mEngineView = nullptr;     // Lets objects add new objects to the engine
+    DrawContext* ScreenContext = nullptr;  // Lets graphics objects draw to the screen
+    DrawContext* GUIContext = nullptr;
     std::weak_ptr<GameObject> CurrObject;
-    NotificationManager *mNotificationManager = nullptr;
+    NotificationManager* mNotificationManager = nullptr;
     int currentFrame = 0;
 };
 

@@ -22,16 +22,9 @@
  * Enemies draw in local space with the nose pointing down (+y); the engine applies the location
  * and rotation returned by GetLocation() and GetRotation().
  */
-class Enemy : public CMPUT350::CollisionObject
-{
+class Enemy : public CMPUT350::CollisionObject {
 public:
-    enum class State
-    {
-        Entering,
-        InFormation,
-        Attacking,
-        Returning
-    };
+    enum class State { Entering, InFormation, Attacking, Returning };
 
     /**
      * @brief Constructs an enemy.
@@ -164,8 +157,8 @@ protected:
     static CMPUT350::Point2D ScreenSize(CMPUT350::GameContext* context);
 
     CMPUT350::Point2D mLocation;
-    CMPUT350::Point2D mHeading;  // Unit direction of travel, kept after a path ends
-    float mSpeed = 6.0f;         // Pixels per frame along a path
+    CMPUT350::Vector2D mHeading;  // Unit direction of travel, kept after a path ends
+    float mSpeed = 6.0f;          // Pixels per frame along a path
 
 private:
     void StartPath(std::vector<CMPUT350::Point2D> path);
@@ -202,10 +195,10 @@ private:
  * @brief "Bee": 1 health, yellow. Dives straight down at the target's x position, leaves the
  * bottom of the screen and re-enters from the top.
  */
-class Enemy1 : public Enemy
-{
+class Enemy1 : public Enemy {
 public:
-    Enemy1(CMPUT350::Point2D home, const std::vector<CMPUT350::Point2D>& path) : Enemy(home, path) {}
+    Enemy1(CMPUT350::Point2D home, const std::vector<CMPUT350::Point2D>& path)
+        : Enemy(home, path) {}
 
     /**
      * @brief Sets health to 1, then starts the entry path.
@@ -238,10 +231,10 @@ protected:
 /**
  * @brief "Butterfly": 1 health, red. Zigzags down toward the target in S-curves.
  */
-class Enemy2 : public Enemy
-{
+class Enemy2 : public Enemy {
 public:
-    Enemy2(CMPUT350::Point2D home, const std::vector<CMPUT350::Point2D>& path) : Enemy(home, path) {}
+    Enemy2(CMPUT350::Point2D home, const std::vector<CMPUT350::Point2D>& path)
+        : Enemy(home, path) {}
 
     /**
      * @brief Sets health to 1, then starts the entry path.
@@ -270,10 +263,10 @@ protected:
  * @brief "Boss": 2 health, green, turning magenta once damaged. Flies a wide loop around the
  * target, then climbs back to formation.
  */
-class Enemy3 : public Enemy
-{
+class Enemy3 : public Enemy {
 public:
-    Enemy3(CMPUT350::Point2D home, const std::vector<CMPUT350::Point2D>& path) : Enemy(home, path) {}
+    Enemy3(CMPUT350::Point2D home, const std::vector<CMPUT350::Point2D>& path)
+        : Enemy(home, path) {}
 
     /**
      * @brief Sets health to 2, then starts the entry path.
