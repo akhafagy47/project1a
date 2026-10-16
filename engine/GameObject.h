@@ -52,6 +52,10 @@ public:
      */
     virtual void Kill();
 
+    /**
+     * @brief Called by the notification manager when a message this object registered for is sent.
+     * @param key The message that was sent.
+     */
     virtual void ReceiveNotification(const std::string& key);
 
 private:

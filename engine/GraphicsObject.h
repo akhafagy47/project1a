@@ -28,8 +28,14 @@ public:
      */
     virtual void RenderForeground(GameContext* context);
 
+    /**
+     * @brief The object's position in the world. Rotation happens around this point.
+     */
     virtual Point2D GetLocation() const = 0;
 
+    /**
+     * @brief The object's rotation in radians.
+     */
     virtual float GetRotation() const = 0;
 };
 

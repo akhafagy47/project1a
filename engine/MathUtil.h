@@ -50,7 +50,7 @@ struct Point2D {
         return *this;
     }
 
-    /// @brief Subtracts a scalar from both coordinates of the point in the struct in place.
+    /// @brief Subtracts another Point2D from the one in the struct in place.
     Point2D& operator-=(const Point2D& other) {
         x -= other.x;
         y -= other.y;
@@ -204,11 +204,14 @@ struct Circle {
     Point2D center;
     float radius;
 
+    /// @brief Constructs a circle from a center point and radius.
     Circle(Point2D c = {0, 0}, float r = 0) : center(c), radius(r) {}
 
+    /// @brief Constructs a circle from center coordinates and radius.
     Circle(float x, float y, float r) : center(x, y), radius(r) {}
 };
 
+/// @brief Inserts a formatted Circle into the output stream.
 [[maybe_unused]] static std::ostream& operator<<(std::ostream& os, const Circle& c) {
     os << "Circle[" << c.center << ", r=" << c.radius << "]";
     return os;
@@ -221,9 +224,11 @@ struct Rect {
     Point2D topLeft;
     float width, height;
 
+    /// @brief Constructs a rectangle from its left and top edges and its size.
     Rect(float left, float top, float width, float height)
         : topLeft(Point2D(left, top)), width(width), height(height) {}
 
+    /// @brief Constructs a rectangle from its top-left corner and its size.
     Rect(Point2D tl = {0, 0}, int w = 0, int h = 0) : topLeft(tl), width(w), height(h) {}
 
     // Creates bounding box around p1 and p2 with positive width/height
@@ -232,6 +237,7 @@ struct Rect {
           width(fabs(p1.x - p2.x)),
           height(fabs(p1.y - p2.y)) {}
 
+    /// @brief Constructs the bounding box around a circle.
     Rect(Point2D center, float radius)
         : topLeft(center.x - radius, center.y - radius), width(2 * radius), height(2 * radius) {}
 
