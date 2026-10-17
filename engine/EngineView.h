@@ -26,9 +26,27 @@ public:
     virtual void AddGameObject(std::shared_ptr<GameObject> gameObject) = 0;
 
     using tGameObject = std::vector<std::shared_ptr<GameObject>>;
+
+    /**
+     * @brief Sends the notification to the notification manager whenever the key is pressed.
+     * @param key The key's scancode.
+     * @param notification The message to send.
+     */
     virtual void InstallKeyDownNotification(int key, const std::string& notification) = 0;
+
+    /**
+     * @brief Sends the notification to the notification manager whenever the key is released.
+     * @param key The key's scancode.
+     * @param notification The message to send.
+     */
     virtual void InstallKeyUpNotification(int key, const std::string& notification) = 0;
+
     using const_iterator = tGameObject::const_iterator;
+
+    /**
+     * @brief Iterators over every object currently in the engine, so objects can be looped over
+     * with a range-based for loop.
+     */
     virtual const_iterator cbegin() const = 0;
     virtual const_iterator cend() const = 0;
     virtual const_iterator begin() const = 0;

@@ -53,8 +53,19 @@ public:
      */
     void Run();
 
+    /**
+     * @brief Adds a notification to send when the key is pressed. A key can have several.
+     */
     void InstallKeyDownNotification(int key, const std::string& notification) override;
+
+    /**
+     * @brief Adds a notification to send when the key is released. A key can have several.
+     */
     void InstallKeyUpNotification(int key, const std::string& notification) override;
+
+    /**
+     * @brief Iterators over the engine's internal object vector.
+     */
     const_iterator cbegin() const override;
     const_iterator cend() const override;
     const_iterator begin() const override;

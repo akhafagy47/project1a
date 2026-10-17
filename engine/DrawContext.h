@@ -12,8 +12,15 @@ namespace CMPUT350 {
 
 class GameEngine;
 
+/**
+ * @brief A color with red, green and blue components from 0 to 255.
+ */
 struct RGBColor {
     uint8_t r, g, b;
+
+    /**
+     * @brief Creates a color from its red, green and blue components.
+     */
     RGBColor(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
 };
 
@@ -32,8 +39,15 @@ const RGBColor grey(200, 200, 200);
 
 }  // namespace Colors
 
+/**
+ * @brief Draws shapes and text to the window. The engine sets an offset and rotation before each
+ * object draws, so objects always draw in their own local space.
+ */
 class DrawContext {
 public:
+    /**
+     * @brief Creates a context that draws to the given window with the given font.
+     */
     DrawContext(std::shared_ptr<sf::RenderWindow> mWindow, std::shared_ptr<sf::Font> font);
 
     /**
@@ -108,10 +122,31 @@ private:
     std::shared_ptr<sf::Font> mFont;
 
     friend class GameEngine;
+
+    /**
+     * @brief Sets the world position added to every point drawn after this call.
+     */
     void SetContextOffset(Point2D p);
+
+    /**
+     * @brief Sets the rotation (in radians) applied to every point drawn after this call.
+     */
     void SetContextRotation(float rotation);
+
+    /**
+     * @brief Converts a point from local space to screen space: rotate, then add the offset.
+     */
     Point2D Transform(Point2D p);
+
+    /**
+     * @brief Converts a point from screen space back to local space: subtract the offset, then
+     * apply the inverse rotation.
+     */
     Point2D ReverseTransform(Point2D p);
+
+    /**
+     * @brief Transforms a local rect's four corners and returns the axis-aligned box around them.
+     */
     Rect Transform(Rect r);
     Point2D mOffset;
     float mRotation = 0.0f;

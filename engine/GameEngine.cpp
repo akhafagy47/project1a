@@ -263,6 +263,9 @@ void GameEngine::InstallKeyUpNotification(int key, const std::string& notificati
     mKeyUpNotifications[key].push_back(notification);
 }
 
+/**
+ * @brief Sends every notification installed for this key press (down) or release (!down).
+ */
 void GameEngine::HandleKey(int key, bool down) {
     auto* keyMap = &mKeyUpNotifications;
     if (down) {
@@ -283,16 +286,26 @@ EngineView::const_iterator GameEngine::cend() const { return mGameObjects.cend()
 EngineView::const_iterator GameEngine::begin() const { return mGameObjects.begin(); }
 EngineView::const_iterator GameEngine::end() const { return mGameObjects.end(); }
 
+/**
+ * @brief Gives the object's location and rotation to the screen context.
+ */
 void GameEngine::SetupTransform(const GraphicsObject& obj) {
     mContext.ScreenContext->SetContextRotation(obj.GetRotation());
     mContext.ScreenContext->SetContextOffset(obj.GetLocation());
 }
 
+/**
+ * @brief Returns the object's bounds as an axis-aligned box in world space.
+ */
 Rect GameEngine::GetWorldBounds(CollisionObject& obj) {
     SetupTransform(obj);
     return mContext.ScreenContext->Transform(obj.GetBounds());
 }
 
+/**
+ * @brief Returns the object's shapes in world space. An object with no shapes gets one rect
+ * covering its bounds.
+ */
 std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject& obj) {
     SetupTransform(obj);
     std::vector<Shape> worldTransformedShape;
@@ -321,6 +334,11 @@ std::vector<Shape> GameEngine::GetWorldShapes(CollisionObject& obj) {
     return worldTransformedShape;
 }
 
+/**
+ * @brief Checks whether a directed line hits a shape.
+ * @param point Set to the first point along the line (from p1 towards p2) that touches the shape.
+ * @return true if the line hits the shape.
+ */
 bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& point) {
     Vector2D lineDirection = line.p2 - line.p1;
 
@@ -432,6 +450,9 @@ bool GameEngine::FirstContact(const Line& line, const Shape& other, Point2D& poi
     return false;
 }
 
+/**
+ * @brief Returns whether two world-space shapes touch, without computing a contact point.
+ */
 bool GameEngine::ShapesOverlap(const Shape& shapeOne, const Shape& shapeTwo) {
     Point2D dummyContactPoint;
 
@@ -478,6 +499,12 @@ bool GameEngine::ShapesOverlap(const Shape& shapeOne, const Shape& shapeTwo) {
     }
 }
 
+/**
+ * @brief Checks whether two objects collide: bounds first, then every pair of shapes.
+ *
+ * If a line of a hits b, pointA is the first hit point in a's local space and hasPointA is true.
+ * Same for b.
+ */
 bool GameEngine::ObjectsCollide(CollisionObject& a, CollisionObject& b, Point2D& pointA,
                                 bool& hasPointA, Point2D& pointB, bool& hasPointB) {
     hasPointA = false;

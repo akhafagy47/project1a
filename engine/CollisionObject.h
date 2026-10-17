@@ -8,8 +8,14 @@
 
 namespace CMPUT350 {
 
+/**
+ * @brief Which kind of shape a Shape holds.
+ */
 enum class ShapeType { kLine, kCircle, kRect };
 
+/**
+ * @brief Storage for one line, circle or axis-aligned rect. Shape::t says which one is in use.
+ */
 union ShapeUnion {
     ShapeUnion(Line l) : line(l) {}
     ShapeUnion(Circle c) : circle(c) {}
@@ -19,6 +25,9 @@ union ShapeUnion {
     Rect rect;
 };
 
+/**
+ * @brief One collision shape (line, circle or axis-aligned rect) tagged with its type.
+ */
 struct Shape {
     Shape(const Line& l) : shape(l), t(ShapeType::kLine) {}
     Shape(const Circle& c) : shape(c), t(ShapeType::kCircle) {}
@@ -28,10 +37,10 @@ struct Shape {
 };
 
 /**
- * @brief A graphics object that takes part in axis-aligned bounding box (AABB) collisions.
+ * @brief A graphics object that can collide with other collision objects.
  *
- * Each frame the engine compares the bounds of every pair of collision objects, and when two
- * overlap, calls CollisionEnter() exactly once on each of them.
+ * Each frame the engine checks every pair once: first their bounds, then their shapes. When two
+ * collide, it calls CollisionEnter() once on each of them.
  */
 class CollisionObject : public GraphicsObject {
 public:
@@ -41,9 +50,20 @@ public:
      */
     virtual void CollisionEnter(const std::shared_ptr<CollisionObject>& obj) = 0;
 
-    virtual void CollisionEnter(const std::shared_ptr<CollisionObject>& obj, const Point2D&) {
+    /**
+     * @brief Called instead of CollisionEnter(obj) when one of this object's lines hit the other
+     * object. By default it just calls CollisionEnter(obj).
+     * @param obj The other object in the collision.
+     * @param collisionPoint First point along the line that hit, in this object's local space.
+     */
+    virtual void CollisionEnter(const std::shared_ptr<CollisionObject>& obj,
+                                const Point2D& /*collisionPoint*/) {
         CollisionEnter(obj);
     }
+
+    /**
+     * @brief The shapes used for collisions, in local space. If empty, the bounds are used.
+     */
     virtual const std::vector<Shape>& GetShapes() = 0;
 
     /**

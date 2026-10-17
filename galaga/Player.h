@@ -9,6 +9,9 @@ class Bullet;
 
 #include "CollisionObject.h"
 
+/**
+ * @brief The player's ship. Moves left and right and fires through key notifications.
+ */
 class Player : public CMPUT350::CollisionObject {
 public:
     /**
@@ -26,10 +29,9 @@ public:
     void Initialize(CMPUT350::GameContext* context) override;
 
     /**
-     * @brief Updates the bullet's position and bounding box for the current frame.
+     * @brief Moves the player for the current frame and fires if requested.
      *
-     * Makes sure player doesnt move outside the and
-     * updates collision rectangle based on current location.
+     * Keeps the player inside the screen and fires a bullet if the fire key was pressed.
      *
      * @param context Pointer to the global GameContext to get screen boundary.
      */
@@ -87,11 +89,28 @@ public:
      */
     const CMPUT350::Rect& GetBounds() override;
 
+    /**
+     * @brief Starts or stops moving, or requests a shot, depending on the notification.
+     * @param key One of the notification names below.
+     */
     void ReceiveNotification(const std::string& key) override;
+
+    /**
+     * @brief Gets the center of the player.
+     */
     CMPUT350::Point2D GetLocation() const override;
+
+    /**
+     * @brief Gets the player's rotation, which is always 0.
+     */
     float GetRotation() const override;
+
+    /**
+     * @brief Gets the player's collision shapes (body and wings), in local space.
+     */
     const std::vector<CMPUT350::Shape>& GetShapes() override;
 
+    // Notification names for the player's keys. Galaga installs them on the engine.
     // used as reference: https://en.cppreference.com/w/cpp/language/constexpr
     static constexpr const char* kShiftLeftKey = "ShiftLeft";
     static constexpr const char* kShiftRightKey = "ShiftRight";
@@ -100,6 +119,9 @@ public:
     static constexpr const char* kFireKey = "FireBullet";
 
 private:
+    /**
+     * @brief Fires a bullet from the gun, unless two player bullets are already alive.
+     */
     void FireBullet(CMPUT350::GameContext* context);
     bool mIsAlive;
     bool mShiftingLeft;
